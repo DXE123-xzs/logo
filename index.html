@@ -33,7 +33,6 @@ body::before {
     padding: 40px 20px;
 }
 
-/* 顶部标题栏 */
 .header-box {
     background: linear-gradient(135deg, rgba(0,10,50,0.8), rgba(0,70,130,0.7));
     border: 1px solid #00e5ff90;
@@ -52,7 +51,6 @@ body::before {
     letter-spacing: 2px;
 }
 
-/* 搜索框区域 */
 .search-wrap {
     max-width: 620px;
     margin: 0 auto 42px;
@@ -67,7 +65,6 @@ body::before {
     color: #ffffff;
     outline: none;
     backdrop-filter: blur(8px);
-    transition: all 0.3s ease;
 }
 #searchInput::placeholder {
     color: #b0c8e8;
@@ -75,46 +72,48 @@ body::before {
 #searchInput:focus {
     box-shadow: 0 0 16px #00e5ff60;
     border-color: #00e5ff;
-    background: rgba(255,255,255,0.1);
 }
 
-/* 滚动行通用样式 */
 .scroll-row {
     width: 100%;
     overflow: hidden;
     position: relative;
     margin: 24px 0;
     padding: 10px 0;
+    cursor: grab;
+}
+.scroll-row:active {
+    cursor: grabbing;
 }
 .scroll-row-inner {
     display: flex;
     gap: 36px;
     white-space: nowrap;
+    transition: transform 0.1s ease-out;
 }
-/* 鼠标悬停整行暂停滚动 */
 .scroll-row:hover .scroll-row-inner {
-    animation-play-state: paused;
+    animation-play-state: paused !important;
+}
+.scroll-row.paused .scroll-row-inner {
+    animation-play-state: paused !important;
 }
 
-/* 奇数行：从右向左滚动 */
 .row-left .scroll-row-inner {
-    animation: moveLeft 32s linear infinite;
+    animation: scrollLeft 25s linear infinite;
 }
-@keyframes moveLeft {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+@keyframes scrollLeft {
+    from {transform: translateX(var(--drag, 0px));}
+    to {transform: translateX(calc(-50% + var(--drag, 0px)));}
 }
 
-/* 偶数行：从左向右滚动 */
 .row-right .scroll-row-inner {
-    animation: moveRight 32s linear infinite;
+    animation: scrollRight 25s linear infinite;
 }
-@keyframes moveRight {
-    0% { transform: translateX(-50%); }
-    100% { transform: translateX(0); }
+@keyframes scrollRight {
+    from {transform: translateX(calc(-50% + var(--drag, 0px)));}
+    to {transform: translateX(var(--drag, 0px));}
 }
 
-/* LOGO圆形卡片样式 */
 .logo-card {
     width: 110px;
     height: 110px;
@@ -132,14 +131,15 @@ body::before {
     justify-content: center;
 }
 .logo-card:hover {
-    transform: scale(1.12);
     background: rgba(0,229,255,0.14);
     box-shadow: 0 0 22px #00e5ff, 0 0 40px #d040ff50;
+    transform: none;
 }
 .logo-card img {
     width: 65px;
     height: 65px;
     object-fit: contain;
+    pointer-events: none;
 }
 .logo-name {
     font-size: 11px;
@@ -149,6 +149,7 @@ body::before {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 85px;
+    pointer-events: none;
 }
 .download-btn {
     font-size: 10px;
@@ -157,13 +158,27 @@ body::before {
     color: #fff;
     text-decoration: none;
     border-radius: 12px;
-    transition: box-shadow 0.25s;
-}
-.download-btn:hover {
-    box-shadow: 0 0 10px #00e5ff;
+    position: relative;
+    z-index: 2;
 }
 
-/* 无搜索结果提示 */
+.preview-mask {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+.preview-img {
+    max-width: 80%;
+    max-height: 80%;
+}
+
 .empty-tip {
     color: #a0c8ff;
     text-align: center;
@@ -171,10 +186,9 @@ body::before {
     padding: 80px 0;
 }
 
-/* 手机端自适应 */
 @media screen and (max-width: 700px) {
     .scroll-row-inner {
-        animation: none;
+        animation: none !important;
         flex-wrap: wrap;
         justify-content: center;
     }
@@ -194,24 +208,25 @@ body::before {
         <h1>企业标志素材库</h1>
     </div>
 
-    <!-- 搜索框 -->
     <div class="search-wrap">
         <input id="searchInput" placeholder="输入标志名称快速搜索..." type="text">
     </div>
 
-    <!-- 滚动容器（多行交错） -->
     <div id="scrollBox"></div>
 </div>
 
+<div class="preview-mask" id="mask">
+    <img class="preview-img" id="bigImg">
+</div>
+
 <script>
-const OWNER = "DXE123-xzs";
-const REPO = "logo";
-const BRANCH = "main";
-let allImageList = [];
+const mask = document.getElementById("mask");
+const bigImg = document.getElementById("bigImg");
 const scrollBox = document.getElementById("scrollBox");
 const searchInput = document.getElementById("searchInput");
 
-// 自动循环背景配置，30秒切换一张
+mask.onclick = () => mask.style.display = "none";
+
 const bgList = [
     "https://picsum.photos/id/1036/1920/1080",
     "https://picsum.photos/id/1018/1920/1080",
@@ -219,73 +234,107 @@ const bgList = [
     "https://picsum.photos/id/1015/1920/1080"
 ];
 let bgIndex = 0;
-// 30000毫秒=30秒自动切换
 setInterval(() => {
     bgIndex = (bgIndex + 1) % bgList.length;
     document.body.style.backgroundImage = `url(${bgList[bgIndex]})`;
 }, 30000);
 
-// 加载仓库全部图片
-async function refreshLogoList() {
-    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/images?ref=${BRANCH}`);
-    const fileList = await res.json();
-    scrollBox.innerHTML = "";
-
-    if (!Array.isArray(fileList)) return;
-    allImageList = fileList.filter(file => /\.(png|jpg|jpeg|svg|ico)$/i.test(file.name));
-    renderFilterList("");
+function getMockImages() {
+    const arr = [];
+    for(let i=1;i<=24;i++){
+        arr.push({
+            name: "LOGO-" + i,
+            src: "https://via.placeholder.com/120?text=LOGO"+i
+        })
+    }
+    return arr;
 }
 
-// 交错多行渲染：奇数行左移、偶数行右移
 function renderFilterList(keyword) {
     scrollBox.innerHTML = "";
-    const filterList = allImageList.filter(item => item.name.toLowerCase().includes(keyword.toLowerCase()));
+    const isSearch = keyword.trim() !== "";
+    let allList = getMockImages();
 
-    if (filterList.length === 0) {
+    if(keyword){
+        allList = allList.filter(item=>item.name.includes(keyword));
+    }
+
+    if (allList.length === 0) {
         scrollBox.innerHTML = `<div class="empty-tip">未匹配到相关标志素材</div>`;
         return;
     }
 
-    // 每行放8个标志，自动分行
     const rowSize = 8;
-    const totalRow = Math.ceil(filterList.length / rowSize);
+    const totalRow = Math.ceil(allList.length / rowSize);
     for (let r = 0; r < totalRow; r++) {
-        // 截取当前行图片
-        const rowData = filterList.slice(r * rowSize, (r + 1) * rowSize);
-        // 复制两份实现无缝滚动
-        const show = [...rowData, ...rowData];
-        // 奇偶行区分滚动方向
+        const rowData = allList.slice(r * rowSize, (r + 1) * rowSize);
+        const listDouble = [...rowData, ...rowData];
         const rowClass = r % 2 === 0 ? "scroll-row row-left" : "scroll-row row-right";
 
-        // 创建行容器
         const rowWrap = document.createElement("div");
         rowWrap.className = rowClass;
+        rowWrap.style.setProperty("--drag", "0px");
         const inner = document.createElement("div");
         inner.className = "scroll-row-inner";
 
-        show.forEach(file => {
-            const imgSrc = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/images/${file.name}`;
+        if (isSearch) {
+            inner.style.animation = "none";
+        }
+
+        listDouble.forEach(file => {
             const card = document.createElement("div");
             card.className = "logo-card";
             card.innerHTML = `
-                <img src="${imgSrc}" alt="${file.name}" crossorigin="anonymous">
+                <img src="${file.src}" crossorigin="anonymous">
                 <div class="logo-name" title="${file.name}">${file.name}</div>
-                <a class="download-btn" href="${imgSrc}" download="${file.name}">下载原图</a>
+                <a class="download-btn" href="${file.src}" download="${file.name}">下载原图</a>
             `;
+
+            let dragMoved = false;
+            card.onclick = function(e){
+                if(e.target.classList.contains("download-btn")) return;
+                if (dragMoved) {
+                    dragMoved = false;
+                    return;
+                }
+                bigImg.src = file.src;
+                mask.style.display = "flex";
+            }
             inner.appendChild(card);
         })
         rowWrap.appendChild(inner);
         scrollBox.appendChild(rowWrap);
+
+        // 拖拽逻辑
+        let isDrag = false;
+        let startX = 0;
+        let dragOffset = 0;
+
+        rowWrap.addEventListener("mousedown", (e) => {
+            isDrag = true;
+            startX = e.clientX;
+            rowWrap.classList.add("paused");
+        });
+        document.addEventListener("mousemove", (e) => {
+            if (!isDrag) return;
+            const diff = e.clientX - startX;
+            if (Math.abs(diff) > 5) dragMoved = true;
+            dragOffset += diff;
+            startX = e.clientX;
+            rowWrap.style.setProperty("--drag", dragOffset + "px");
+        });
+        document.addEventListener("mouseup", () => {
+            isDrag = false;
+            rowWrap.classList.remove("paused");
+        });
     }
 }
 
-// 搜索实时监听
 searchInput.addEventListener("input", (e) => {
     renderFilterList(e.target.value);
 });
 
-// 初始化加载
-refreshLogoList();
+renderFilterList("");
 </script>
 </body>
 </html>
