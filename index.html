@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>企业LOGO标志素材库</title>
+<title>企业标志素材库</title>
 <style>
 * {
     margin: 0;
@@ -14,15 +14,16 @@
 
 body {
     min-height: 100vh;
-    background: url('https://img1.baidu.com/it/u=1290225820,3829322323&fm=253&fmt=auto&app=138&f=JPEG?w=1920&h=1080') center/cover no-repeat fixed;
+    background: url('https://picsum.photos/id/1036/1920/1080') center/cover no-repeat fixed;
     position: relative;
     overflow-x: hidden;
+    transition: background 0.6s ease;
 }
 body::before {
     content: "";
     position: fixed;
     inset: 0;
-    background: rgba(0, 5, 20, 0.78);
+    background: rgba(0, 8, 22, 0.82);
     z-index: -1;
 }
 
@@ -32,170 +33,157 @@ body::before {
     padding: 40px 20px;
 }
 
-/* 顶部标题框 居中 */
+/* 顶部标题栏 */
 .header-box {
-    background: linear-gradient(135deg, rgba(0,4,40,0.75), rgba(0,80,146,0.65));
-    border: 1px solid #00f0ff88;
-    box-shadow: 0 0 18px #00f0ff44, inset 0 0 20px rgba(0,240,255,0.1);
+    background: linear-gradient(135deg, rgba(0,10,50,0.8), rgba(0,70,130,0.7));
+    border: 1px solid #00e5ff90;
+    box-shadow: 0 0 20px #00e5ff40, inset 0 0 30px rgba(0,229,255,0.1);
     color: #fff;
-    padding: 36px 32px;
-    border-radius: 14px;
-    margin: 0 auto 30px;
+    padding: 40px 32px;
+    border-radius: 18px;
+    margin: 0 auto 32px;
     text-align: center;
-    max-width: 800px;
+    max-width: 820px;
 }
 .header-box h1 {
-    font-size: 32px;
-    color: #00f0ff;
-    text-shadow: 0 0 10px #00f0ff;
-    margin-bottom: 10px;
-}
-.header-box p {
-    color: #d0e8ff;
-    font-size: 17px;
+    font-size: 34px;
+    color: #00e5ff;
+    text-shadow: 0 0 12px #00e5ff;
+    letter-spacing: 2px;
 }
 
 /* 搜索框区域 */
 .search-wrap {
-    max-width: 600px;
-    margin: 0 auto 40px;
+    max-width: 620px;
+    margin: 0 auto 42px;
 }
 #searchInput {
     width: 100%;
-    padding: 14px 20px;
-    font-size: 16px;
+    padding: 16px 24px;
+    font-size: 17px;
     border-radius: 999px;
-    border: 1px solid #00f0ff77;
-    background: rgba(255,255,255,0.08);
-    color: #fff;
+    border: 1px solid #00e5ff70;
+    background: rgba(255,255,255,0.07);
+    color: #ffffff;
     outline: none;
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
 }
 #searchInput::placeholder {
     color: #b0c8e8;
 }
 #searchInput:focus {
-    box-shadow: 0 0 12px #00f0ff66;
-    border-color: #00f0ff;
+    box-shadow: 0 0 16px #00e5ff60;
+    border-color: #00e5ff;
+    background: rgba(255,255,255,0.1);
 }
 
-/* 提示栏居中 */
-.tip-notice {
-    background: rgba(20, 22, 40, 0.7);
-    border: 1px solid #9900ff77;
-    box-shadow: 0 0 12px #9900ff33;
-    padding: 20px 26px;
-    border-radius: 12px;
-    margin: 0 auto 50px;
-    text-align: center;
-    max-width: 700px;
-}
-.tip-notice h3 {
-    color: #ff48ff;
-    text-shadow: 0 0 6px #ff48ff66;
-    font-size: 18px;
-    margin-bottom: 8px;
-}
-.tip-notice p {
-    color: #c0c8f0;
-}
-
-/* 3D球体容器 缩小尺寸 */
-.ball-wrap {
-    width: 420px;
-    height: 420px;
-    margin: 0 auto;
+/* 滚动行通用样式 */
+.scroll-row {
+    width: 100%;
+    overflow: hidden;
     position: relative;
-    transform-style: preserve-3d;
-    animation: rotateBall 30s linear infinite;
-    cursor: grab;
+    margin: 24px 0;
+    padding: 10px 0;
 }
-.ball-wrap:active {
-    cursor: grabbing;
+.scroll-row-inner {
+    display: flex;
+    gap: 36px;
+    white-space: nowrap;
 }
-/* 球体自动旋转动画 */
-@keyframes rotateBall {
-    0% { transform: rotateY(var(--rotateY, 0deg)); }
-    100% { transform: rotateY(calc(var(--rotateY, 0deg) + 360deg)); }
+/* 鼠标悬停整行暂停滚动 */
+.scroll-row:hover .scroll-row-inner {
+    animation-play-state: paused;
 }
 
-/* LOGO圆形容器 */
-.ball-item {
-    width: 90px;
-    height: 90px;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform-origin: 0 0 -210px;
-    transform: translate(-50%, -50%);
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(4px);
-    border: 1px solid #00f0ff66;
+/* 奇数行：从右向左滚动 */
+.row-left .scroll-row-inner {
+    animation: moveLeft 32s linear infinite;
+}
+@keyframes moveLeft {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* 偶数行：从左向右滚动 */
+.row-right .scroll-row-inner {
+    animation: moveRight 32s linear infinite;
+}
+@keyframes moveRight {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+}
+
+/* LOGO圆形卡片样式 */
+.logo-card {
+    width: 110px;
+    height: 110px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(6px);
+    border: 1px solid #00e5ff60;
     border-radius: 50%;
-    padding: 10px;
+    padding: 12px;
     text-align: center;
-    transition: 0.3s;
+    transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
-.ball-item:hover {
-    background: rgba(0,240,255,0.15);
-    box-shadow: 0 0 15px #00f0ff;
-    transform: translate(-50%, -50%) scale(1.1);
+.logo-card:hover {
+    transform: scale(1.12);
+    background: rgba(0,229,255,0.14);
+    box-shadow: 0 0 22px #00e5ff, 0 0 40px #d040ff50;
 }
-.ball-item img {
-    width: 55px;
-    height: 55px;
+.logo-card img {
+    width: 65px;
+    height: 65px;
     object-fit: contain;
 }
-.ball-name {
-    font-size: 10px;
-    color: #a0e8ff;
-    margin: 4px 0;
+.logo-name {
+    font-size: 11px;
+    color: #b0e8ff;
+    margin: 5px 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 70px;
+    max-width: 85px;
 }
 .download-btn {
-    font-size: 9px;
-    padding: 2px 7px;
-    background: linear-gradient(90deg,#00f0ff,#9900ff);
+    font-size: 10px;
+    padding: 3px 10px;
+    background: linear-gradient(90deg,#00e5ff,#d040ff);
     color: #fff;
     text-decoration: none;
-    border-radius: 10px;
+    border-radius: 12px;
+    transition: box-shadow 0.25s;
+}
+.download-btn:hover {
+    box-shadow: 0 0 10px #00e5ff;
 }
 
 /* 无搜索结果提示 */
 .empty-tip {
     color: #a0c8ff;
     text-align: center;
-    font-size: 18px;
-    padding-top: 120px;
+    font-size: 20px;
+    padding: 80px 0;
 }
 
-/* 手机端适配 */
+/* 手机端自适应 */
 @media screen and (max-width: 700px) {
-    .ball-wrap {
-        width: 100%;
-        height: auto;
+    .scroll-row-inner {
         animation: none;
-        cursor: default;
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
     }
-    .ball-item {
-        position: static;
-        transform: none;
-        transform-origin: unset;
-        left: unset;
-        top: unset;
-        width: 90px;
-        height: 90px;
-        margin: 0 auto;
+    .logo-card {
+        width: 95px;
+        height: 95px;
+    }
+    .header-box h1 {
+        font-size: 26px;
     }
 }
 </style>
@@ -203,96 +191,100 @@ body::before {
 <body>
 <div class="container">
     <div class="header-box">
-        <h1>企业LOGO标志素材库</h1>
-        <p>3D球形环绕预览 · 一键下载原图</p>
+        <h1>企业标志素材库</h1>
     </div>
 
     <!-- 搜索框 -->
     <div class="search-wrap">
-        <input id="searchInput" placeholder="输入LOGO名称搜索..." type="text">
+        <input id="searchInput" placeholder="输入标志名称快速搜索..." type="text">
     </div>
 
-    <div class="tip-notice">
-        <h3>操作说明</h3>
-        <p>电脑端：鼠标按住球体拖动可手动旋转；如需新增LOGO请发给管理员更新</p>
-    </div>
-
-    <div class="ball-wrap" id="gallery"></div>
+    <!-- 滚动容器（多行交错） -->
+    <div id="scrollBox"></div>
 </div>
 
 <script>
 const OWNER = "DXE123-xzs";
 const REPO = "logo";
 const BRANCH = "main";
-let allImageList = []; // 存储全部图片原始数据
-let rotateY = 0;
-let isDrag = false;
-let startX = 0;
-const ballDom = document.getElementById("gallery");
+let allImageList = [];
+const scrollBox = document.getElementById("scrollBox");
 const searchInput = document.getElementById("searchInput");
 
-// 球体拖拽旋转逻辑
-ballDom.addEventListener("mousedown", (e) => {
-    isDrag = true;
-    startX = e.clientX;
-    ballDom.style.animationPlayState = "paused";
-});
-document.addEventListener("mousemove", (e) => {
-    if (!isDrag) return;
-    const diffX = e.clientX - startX;
-    rotateY += diffX * 0.4;
-    ballDom.style.setProperty("--rotateY", rotateY + "deg");
-    startX = e.clientX;
-});
-document.addEventListener("mouseup", () => {
-    isDrag = false;
-    ballDom.style.animationPlayState = "running";
-});
+// 自动循环背景配置，30秒切换一张
+const bgList = [
+    "https://picsum.photos/id/1036/1920/1080",
+    "https://picsum.photos/id/1018/1920/1080",
+    "https://picsum.photos/id/1043/1920/1080",
+    "https://picsum.photos/id/1015/1920/1080"
+];
+let bgIndex = 0;
+// 30000毫秒=30秒自动切换
+setInterval(() => {
+    bgIndex = (bgIndex + 1) % bgList.length;
+    document.body.style.backgroundImage = `url(${bgList[bgIndex]})`;
+}, 30000);
 
-// 加载全部图片
+// 加载仓库全部图片
 async function refreshLogoList() {
-    const galleryBox = document.getElementById("gallery");
     const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/images?ref=${BRANCH}`);
     const fileList = await res.json();
-    galleryBox.innerHTML = "";
+    scrollBox.innerHTML = "";
 
     if (!Array.isArray(fileList)) return;
     allImageList = fileList.filter(file => /\.(png|jpg|jpeg|svg|ico)$/i.test(file.name));
     renderFilterList("");
 }
 
-// 根据关键词过滤渲染球体
+// 交错多行渲染：奇数行左移、偶数行右移
 function renderFilterList(keyword) {
-    const galleryBox = document.getElementById("gallery");
-    galleryBox.innerHTML = "";
+    scrollBox.innerHTML = "";
     const filterList = allImageList.filter(item => item.name.toLowerCase().includes(keyword.toLowerCase()));
+
     if (filterList.length === 0) {
-        galleryBox.innerHTML = `<div class="empty-tip">未匹配到相关LOGO</div>`;
+        scrollBox.innerHTML = `<div class="empty-tip">未匹配到相关标志素材</div>`;
         return;
     }
-    const total = filterList.length;
-    const radius = 210;
-    filterList.forEach((file, index) => {
-        const imgSrc = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/images/${file.name}`;
-        const angleY = (360 / total) * index;
-        const angleX = Math.sin(index * 1.2) * 35;
-        const card = document.createElement("div");
-        card.className = "ball-item";
-        card.style.transform = `translate(-50%, -50%) rotateY(${angleY}deg) rotateX(${angleX}deg) translateZ(${radius}px)`;
-        card.innerHTML = `
-            <img src="${imgSrc}" alt="${file.name}" crossorigin="anonymous">
-            <div class="ball-name" title="${file.name}">${file.name}</div>
-            <a class="download-btn" href="${imgSrc}" download="${file.name}">下载</a>
-        `;
-        galleryBox.appendChild(card);
-    })
+
+    // 每行放8个标志，自动分行
+    const rowSize = 8;
+    const totalRow = Math.ceil(filterList.length / rowSize);
+    for (let r = 0; r < totalRow; r++) {
+        // 截取当前行图片
+        const rowData = filterList.slice(r * rowSize, (r + 1) * rowSize);
+        // 复制两份实现无缝滚动
+        const show = [...rowData, ...rowData];
+        // 奇偶行区分滚动方向
+        const rowClass = r % 2 === 0 ? "scroll-row row-left" : "scroll-row row-right";
+
+        // 创建行容器
+        const rowWrap = document.createElement("div");
+        rowWrap.className = rowClass;
+        const inner = document.createElement("div");
+        inner.className = "scroll-row-inner";
+
+        show.forEach(file => {
+            const imgSrc = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/images/${file.name}`;
+            const card = document.createElement("div");
+            card.className = "logo-card";
+            card.innerHTML = `
+                <img src="${imgSrc}" alt="${file.name}" crossorigin="anonymous">
+                <div class="logo-name" title="${file.name}">${file.name}</div>
+                <a class="download-btn" href="${imgSrc}" download="${file.name}">下载原图</a>
+            `;
+            inner.appendChild(card);
+        })
+        rowWrap.appendChild(inner);
+        scrollBox.appendChild(rowWrap);
+    }
 }
 
-// 搜索输入监听
+// 搜索实时监听
 searchInput.addEventListener("input", (e) => {
     renderFilterList(e.target.value);
 });
 
+// 初始化加载
 refreshLogoList();
 </script>
 </body>
