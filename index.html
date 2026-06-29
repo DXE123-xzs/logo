@@ -220,6 +220,10 @@ body::before {
 </div>
 
 <script>
+const OWNER = "DXE123-xzs";
+const REPO = "logo";
+const BRANCH = "main";
+
 const mask = document.getElementById("mask");
 const bigImg = document.getElementById("bigImg");
 const scrollBox = document.getElementById("scrollBox");
@@ -227,6 +231,7 @@ const searchInput = document.getElementById("searchInput");
 
 mask.onclick = () => mask.style.display = "none";
 
+// 自动切换背景
 const bgList = [
     "https://picsum.photos/id/1036/1920/1080",
     "https://picsum.photos/id/1018/1920/1080",
@@ -239,35 +244,33 @@ setInterval(() => {
     document.body.style.backgroundImage = `url(${bgList[bgIndex]})`;
 }, 30000);
 
-function getMockImages() {
-    const arr = [];
-    for(let i=1;i<=24;i++){
-        arr.push({
-            name: "LOGO-" + i,
-            src: "https://via.placeholder.com/120?text=LOGO"+i
-        })
-    }
-    return arr;
+let allImageList = [];
+
+// 读取GitHub仓库图片
+async function refreshLogoList() {
+    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/images?ref=${BRANCH}`);
+    const fileList = await res.json();
+    scrollBox.innerHTML = "";
+    if (!Array.isArray(fileList)) return;
+    allImageList = fileList.filter(file => /\.(png|jpg|jpeg|svg|ico)$/i.test(file.name));
+    renderFilterList("");
 }
 
 function renderFilterList(keyword) {
     scrollBox.innerHTML = "";
     const isSearch = keyword.trim() !== "";
-    let allList = getMockImages();
+    const filterList = allImageList.filter(item => item.name.toLowerCase().includes(keyword.toLowerCase()));
 
-    if(keyword){
-        allList = allList.filter(item=>item.name.includes(keyword));
-    }
-
-    if (allList.length === 0) {
+    if (filterList.length === 0) {
         scrollBox.innerHTML = `<div class="empty-tip">未匹配到相关标志素材</div>`;
         return;
     }
 
     const rowSize = 8;
-    const totalRow = Math.ceil(allList.length / rowSize);
+    const totalRow = Math.ceil(filterList.length / rowSize);
     for (let r = 0; r < totalRow; r++) {
-        const rowData = allList.slice(r * rowSize, (r + 1) * rowSize);
+        const rowData = filterList.slice(r * rowSize, (r + 1) * rowSize);
+        // 双倍数组，实现无缝衔接
         const listDouble = [...rowData, ...rowData];
         const rowClass = r % 2 === 0 ? "scroll-row row-left" : "scroll-row row-right";
 
@@ -277,17 +280,19 @@ function renderFilterList(keyword) {
         const inner = document.createElement("div");
         inner.className = "scroll-row-inner";
 
+        // 搜索时关闭动画
         if (isSearch) {
             inner.style.animation = "none";
         }
 
         listDouble.forEach(file => {
+            const imgSrc = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/images/${file.name}`;
             const card = document.createElement("div");
             card.className = "logo-card";
             card.innerHTML = `
-                <img src="${file.src}" crossorigin="anonymous">
+                <img src="${imgSrc}" crossorigin="anonymous">
                 <div class="logo-name" title="${file.name}">${file.name}</div>
-                <a class="download-btn" href="${file.src}" download="${file.name}">下载原图</a>
+                <a class="download-btn" href="${imgSrc}" download="${file.name}">下载原图</a>
             `;
 
             let dragMoved = false;
@@ -297,7 +302,7 @@ function renderFilterList(keyword) {
                     dragMoved = false;
                     return;
                 }
-                bigImg.src = file.src;
+                bigImg.src = imgSrc;
                 mask.style.display = "flex";
             }
             inner.appendChild(card);
@@ -305,7 +310,7 @@ function renderFilterList(keyword) {
         rowWrap.appendChild(inner);
         scrollBox.appendChild(rowWrap);
 
-        // 拖拽逻辑
+        // 鼠标拖拽
         let isDrag = false;
         let startX = 0;
         let dragOffset = 0;
@@ -334,7 +339,8 @@ searchInput.addEventListener("input", (e) => {
     renderFilterList(e.target.value);
 });
 
-renderFilterList("");
+// 加载GitHub图片
+refreshLogoList();
 </script>
 </body>
 </html>
