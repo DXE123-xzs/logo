@@ -270,7 +270,6 @@ function renderFilterList(keyword) {
     const totalRow = Math.ceil(filterList.length / rowSize);
     for (let r = 0; r < totalRow; r++) {
         const rowData = filterList.slice(r * rowSize, (r + 1) * rowSize);
-        // 双倍数组，实现无缝衔接
         const listDouble = [...rowData, ...rowData];
         const rowClass = r % 2 === 0 ? "scroll-row row-left" : "scroll-row row-right";
 
@@ -280,7 +279,6 @@ function renderFilterList(keyword) {
         const inner = document.createElement("div");
         inner.className = "scroll-row-inner";
 
-        // 搜索时关闭动画
         if (isSearch) {
             inner.style.animation = "none";
         }
@@ -289,6 +287,7 @@ function renderFilterList(keyword) {
             const imgSrc = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/images/${file.name}`;
             const card = document.createElement("div");
             card.className = "logo-card";
+            // 关键：download强制直接下载，不会打开图片预览
             card.innerHTML = `
                 <img src="${imgSrc}" crossorigin="anonymous">
                 <div class="logo-name" title="${file.name}">${file.name}</div>
@@ -297,7 +296,11 @@ function renderFilterList(keyword) {
 
             let dragMoved = false;
             card.onclick = function(e){
-                if(e.target.classList.contains("download-btn")) return;
+                // 点击下载按钮，阻止冒泡，只执行下载，不弹出大图
+                if(e.target.classList.contains("download-btn")){
+                    e.stopPropagation();
+                    return;
+                }
                 if (dragMoved) {
                     dragMoved = false;
                     return;
@@ -339,7 +342,6 @@ searchInput.addEventListener("input", (e) => {
     renderFilterList(e.target.value);
 });
 
-// 加载GitHub图片
 refreshLogoList();
 </script>
 </body>
