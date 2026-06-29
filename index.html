@@ -156,10 +156,10 @@ body::before {
     padding: 3px 10px;
     background: linear-gradient(90deg,#00e5ff,#d040ff);
     color: #fff;
-    text-decoration: none;
     border-radius: 12px;
     position: relative;
     z-index: 2;
+    cursor: pointer;
 }
 
 .preview-mask {
@@ -246,6 +246,22 @@ setInterval(() => {
 
 let allImageList = [];
 
+// 二进制强制下载函数（解决跨域CDN无法下载问题）
+async function downloadImage(url, fileName) {
+    try {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(blobUrl);
+    } catch (e) {
+        window.open(url, "_blank");
+    }
+}
+
 // 读取GitHub仓库图片
 async function refreshLogoList() {
     const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/images?ref=${BRANCH}`);
@@ -287,20 +303,22 @@ function renderFilterList(keyword) {
             const imgSrc = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/images/${file.name}`;
             const card = document.createElement("div");
             card.className = "logo-card";
-            // 关键：download强制直接下载，不会打开图片预览
             card.innerHTML = `
                 <img src="${imgSrc}" crossorigin="anonymous">
                 <div class="logo-name" title="${file.name}">${file.name}</div>
-                <a class="download-btn" href="${imgSrc}" download="${file.name}">下载原图</a>
+                <div class="download-btn">下载原图</div>
             `;
 
             let dragMoved = false;
-            card.onclick = function(e){
-                // 点击下载按钮，阻止冒泡，只执行下载，不弹出大图
-                if(e.target.classList.contains("download-btn")){
-                    e.stopPropagation();
-                    return;
-                }
+
+            // 点击按钮执行强制下载，阻止冒泡，不会打开大图
+            card.querySelector(".download-btn").onclick = function (e) {
+                e.stopPropagation();
+                downloadImage(imgSrc, file.name);
+            }
+
+            // 点击卡片预览大图
+            card.onclick = function (e) {
                 if (dragMoved) {
                     dragMoved = false;
                     return;
@@ -308,12 +326,13 @@ function renderFilterList(keyword) {
                 bigImg.src = imgSrc;
                 mask.style.display = "flex";
             }
+
             inner.appendChild(card);
         })
         rowWrap.appendChild(inner);
         scrollBox.appendChild(rowWrap);
 
-        // 鼠标拖拽
+        // 鼠标拖拽整行滑动
         let isDrag = false;
         let startX = 0;
         let dragOffset = 0;
