@@ -105,61 +105,70 @@ body::before {
     transform: translateY(-2px);
 }
 
-/* 左上角时间天气面板 缩小+高透明，不遮挡标题 */
+/* 左上角天气面板 再次放大 */
 .time-weather-panel {
     position: fixed;
     top: 8px;
     left: 8px;
     z-index: 999;
-    /* 大幅提升透明度 */
     background: linear-gradient(135deg, rgba(0,15,60,0.28), rgba(10,80,160,0.22));
     border: 1px solid rgba(0,229,255,0.15);
     box-shadow: 0 0 10px rgba(0,229,255,0.08);
     backdrop-filter: blur(6px);
-    border-radius: 10px;
-    padding: 8px 12px;
+    border-radius: 12px;
+    padding: 16px 24px;
     color: #fff;
-    min-width: 128px;
-    font-size: 11px;
+    min-width: 200px;
+    font-size: 15px;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+}
+.time-weather-panel.hide-panel {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    pointer-events: none;
 }
 .time-text {
-    font-size: 16px;
+    font-size: 28px;
     color: #00f0ff;
     text-shadow: 0 0 4px rgba(0,240,255,0.35);
     font-weight: 600;
     line-height: 1.1;
 }
 .date-text {
-    font-size: 10px;
+    font-size: 14px;
     color: #b8e6ff;
-    margin: 2px 0 4px;
+    margin: 6px 0 8px;
 }
 .weather-row {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 10px;
+    gap: 10px;
+    font-size: 14px;
     color: #d0eaff;
 }
 .weather-icon {
-    font-size: 14px;
+    font-size: 24px;
 }
 /* 移动端适配 */
 @media screen and (max-width: 768px) {
     .time-weather-panel {
         top: 6px;
         left: 6px;
-        padding: 6px 10px;
-        min-width: 110px;
+        padding: 12px 18px;
+        min-width: 160px;
     }
     .time-text {
-        font-size: 14px;
+        font-size: 24px;
     }
     .date-text, .weather-row {
-        font-size: 9px;
+        font-size: 13px;
     }
     .weather-icon {
-        font-size: 12px;
+        font-size: 20px;
     }
 }
 
@@ -359,7 +368,7 @@ body::before {
 </head>
 <body>
 <!-- 左上角时间天气面板 -->
-<div class="time-weather-panel">
+<div class="time-weather-panel" id="weatherPanel">
     <div class="time-text" id="timeBox">00:00</div>
     <div class="date-text" id="dateBox">2026年07月01日 星期三</div>
     <div class="weather-row">
@@ -394,6 +403,7 @@ const mask = document.getElementById("mask");
 const bigImg = document.getElementById("bigImg");
 const scrollBox = document.getElementById("scrollBox");
 const searchInput = document.getElementById("searchInput");
+const weatherPanel = document.getElementById("weatherPanel");
 
 // 时间天气DOM
 const timeBox = document.getElementById("timeBox");
@@ -402,6 +412,19 @@ const weatherIcon = document.getElementById("weatherIcon");
 const weatherText = document.getElementById("weatherText");
 
 mask.onclick = () => mask.style.display = "none";
+
+// 滚动监听：向下滚动隐藏面板，回到顶部显示
+let lastScrollY = 0;
+window.addEventListener('scroll', () => {
+    const currentY = window.scrollY;
+    // 滚动超过80px 隐藏
+    if (currentY > 80) {
+        weatherPanel.classList.add('hide-panel');
+    } else {
+        weatherPanel.classList.remove('hide-panel');
+    }
+    lastScrollY = currentY;
+})
 
 // 时间日期每秒自动更新
 function updateDateTime() {
