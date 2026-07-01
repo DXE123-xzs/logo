@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>企业标志素材库</title>
+<title>企业标志素材库 | LOGO资源中心</title>
 <style>
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: "Microsoft YaHei", system-ui, sans-serif;
+    font-family: "Microsoft YaHei", system-ui, -apple-system, sans-serif;
 }
 
 body {
@@ -17,79 +17,113 @@ body {
     background: url('https://picsum.photos/id/1036/1920/1080') center/cover no-repeat fixed;
     position: relative;
     overflow-x: hidden;
-    transition: background 0.6s ease;
+    transition: background 0.8s ease, opacity 0.6s ease;
+    opacity: 0;
+    animation: pageFadeIn 1s ease forwards;
+}
+@keyframes pageFadeIn {
+    to { opacity: 1; }
 }
 body::before {
     content: "";
     position: fixed;
     inset: 0;
-    background: rgba(0, 8, 22, 0.82);
+    background: rgba(0, 0, 0, 0.65);
     z-index: -1;
 }
 
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+}
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #00e5ff, #9940ff);
+    border-radius: 99px;
+}
+
 .container {
-    max-width: 1400px;
+    max-width: 1500px;
     margin: 0 auto;
-    padding: 40px 20px;
+    padding: 50px 24px;
 }
 
 .header-box {
-    background: linear-gradient(135deg, rgba(0,10,50,0.8), rgba(0,70,130,0.7));
-    border: 1px solid #00e5ff90;
-    box-shadow: 0 0 20px #00e5ff40, inset 0 0 30px rgba(0,229,255,0.1);
+    background: linear-gradient(135deg, rgba(0,15,60,0.75), rgba(10,80,160,0.65));
+    border: 1px solid rgba(0,229,255,0.3);
+    box-shadow: 
+        0 0 30px rgba(0,229,255,0.18),
+        inset 0 0 40px rgba(0,229,255,0.08);
     color: #fff;
-    padding: 40px 32px;
-    border-radius: 18px;
-    margin: 0 auto 32px;
+    padding: 48px 36px;
+    border-radius: 24px;
+    margin: 0 auto 40px;
     text-align: center;
-    max-width: 820px;
+    max-width: 860px;
+    backdrop-filter: blur(12px);
 }
 .header-box h1 {
-    font-size: 34px;
-    color: #00e5ff;
-    text-shadow: 0 0 12px #00e5ff;
-    letter-spacing: 2px;
+    font-size: 38px;
+    color: #00f0ff;
+    text-shadow: 0 0 16px rgba(0,240,255,0.6);
+    letter-spacing: 3px;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+.header-box p {
+    color: #b8e6ff;
+    font-size: 16px;
+    opacity: 0.85;
+    letter-spacing: 1px;
 }
 
 .search-wrap {
-    max-width: 620px;
-    margin: 0 auto 42px;
+    max-width: 660px;
+    margin: 0 auto 48px;
 }
 #searchInput {
     width: 100%;
-    padding: 16px 24px;
-    font-size: 17px;
+    padding: 18px 28px;
+    font-size: 18px;
     border-radius: 999px;
-    border: 1px solid #00e5ff70;
-    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(0,229,255,0.25);
+    background: rgba(255,255,255,0.05);
     color: #ffffff;
     outline: none;
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
 }
 #searchInput::placeholder {
-    color: #b0c8e8;
+    color: #94b8e0;
 }
 #searchInput:focus {
-    box-shadow: 0 0 16px #00e5ff60;
+    box-shadow: 0 0 24px rgba(0,229,255,0.35);
     border-color: #00e5ff;
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-2px);
 }
 
+/* 滚动容器 左右渐变遮罩，边缘柔和淡出 */
 .scroll-row {
     width: 100%;
     overflow: hidden;
     position: relative;
-    margin: 24px 0;
-    padding: 10px 0;
+    margin: 32px 0;
+    padding: 14px 0;
     cursor: grab;
+    mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
 }
 .scroll-row:active {
     cursor: grabbing;
 }
 .scroll-row-inner {
     display: flex;
-    gap: 36px;
+    gap: 42px;
     white-space: nowrap;
-    transition: transform 0.1s ease-out;
+    transition: transform 0.12s ease-out;
 }
 .scroll-row:hover .scroll-row-inner {
     animation-play-state: paused !important;
@@ -99,7 +133,7 @@ body::before {
 }
 
 .row-left .scroll-row-inner {
-    animation: scrollLeft 25s linear infinite;
+    animation: scrollLeft 32s linear infinite;
 }
 @keyframes scrollLeft {
     from {transform: translateX(var(--drag, 0px));}
@@ -107,7 +141,7 @@ body::before {
 }
 
 .row-right .scroll-row-inner {
-    animation: scrollRight 25s linear infinite;
+    animation: scrollRight 32s linear infinite;
 }
 @keyframes scrollRight {
     from {transform: translateX(calc(-50% + var(--drag, 0px)));}
@@ -115,51 +149,79 @@ body::before {
 }
 
 .logo-card {
-    width: 110px;
-    height: 110px;
+    width: 124px;
+    height: 124px;
     flex-shrink: 0;
-    background: rgba(255,255,255,0.06);
-    backdrop-filter: blur(6px);
-    border: 1px solid #00e5ff60;
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(8px);
     border-radius: 50%;
-    padding: 12px;
+    padding: 14px;
     text-align: center;
-    transition: all 0.3s ease;
+    transition: all 0.35s cubic-bezier(0.2,0,0.2,1);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    position: relative;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+}
+.logo-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    padding: 1px;
+    background: linear-gradient(135deg, #00e5ff, #a840ff, #00e5ff);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.4;
+    transition: opacity 0.3s ease;
 }
 .logo-card:hover {
-    background: rgba(0,229,255,0.14);
-    box-shadow: 0 0 22px #00e5ff, 0 0 40px #d040ff50;
-    transform: none;
+    background: rgba(0,229,255,0.1);
+    transform: scale(1.08);
+    box-shadow: 
+        0 0 30px rgba(0,229,255,0.4),
+        0 0 60px rgba(160,60,255,0.25);
+}
+.logo-card:hover::before {
+    opacity: 1;
 }
 .logo-card img {
-    width: 65px;
-    height: 65px;
+    width: 72px;
+    height: 72px;
     object-fit: contain;
     pointer-events: none;
+    filter: drop-shadow(0 0 4px rgba(255,255,255,0.3));
 }
 .logo-name {
-    font-size: 11px;
-    color: #b0e8ff;
-    margin: 5px 0;
+    font-size: 12px;
+    color: #c0e8ff;
+    margin: 6px 0 4px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 85px;
+    max-width: 96px;
     pointer-events: none;
 }
 .download-btn {
-    font-size: 10px;
-    padding: 3px 10px;
-    background: linear-gradient(90deg,#00e5ff,#d040ff);
+    font-size: 11px;
+    padding: 4px 12px;
+    background: linear-gradient(90deg,#00e5ff,#a840ff);
     color: #fff;
-    border-radius: 12px;
+    border-radius: 99px;
     position: relative;
     z-index: 2;
     cursor: pointer;
+    transition: all 0.25s ease;
+    font-weight: 500;
+}
+.download-btn:hover {
+    box-shadow: 0 0 12px rgba(0,229,255,0.6);
+    transform: scale(1.05);
 }
 
 .preview-mask {
@@ -168,36 +230,75 @@ body::before {
     top: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.85);
+    background: rgba(0,0,0,0.92);
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 999;
+    z-index: 9999;
+    backdrop-filter: blur(8px);
 }
+/* 统一白色细边框，原图无任何上色、渐变填充 */
 .preview-img {
-    max-width: 80%;
-    max-height: 80%;
+    max-width: 82%;
+    max-height: 82%;
+    border: 3px solid #ffffff;
+    border-radius: 12px;
+    /* 去除渐变背景、彩色填充，完全保留原图原色 */
+    background: transparent;
 }
 
 .empty-tip {
     color: #a0c8ff;
     text-align: center;
-    font-size: 20px;
-    padding: 80px 0;
+    font-size: 22px;
+    padding: 100px 0;
+    letter-spacing: 1px;
+    opacity: 0.75;
 }
 
-@media screen and (max-width: 700px) {
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 32px 16px;
+    }
+    .header-box {
+        padding: 32px 20px;
+        border-radius: 20px;
+    }
+    .header-box h1 {
+        font-size: 28px;
+    }
+    .header-box p {
+        font-size: 14px;
+    }
+    #searchInput {
+        padding: 14px 22px;
+        font-size: 16px;
+    }
     .scroll-row-inner {
         animation: none !important;
         flex-wrap: wrap;
         justify-content: center;
+        gap: 24px;
+    }
+    /* 移动端关闭渐变遮罩，避免看不清卡片 */
+    .scroll-row {
+        mask-image: none;
+        -webkit-mask-image: none;
     }
     .logo-card {
-        width: 95px;
-        height: 95px;
+        width: 102px;
+        height: 102px;
     }
-    .header-box h1 {
-        font-size: 26px;
+    .logo-card img {
+        width: 60px;
+        height: 60px;
+    }
+    .scroll-row {
+        margin: 16px 0;
+    }
+    /* 移动端缩小边框宽度 */
+    .preview-img {
+        border-width: 2px;
     }
 }
 </style>
@@ -206,10 +307,11 @@ body::before {
 <div class="container">
     <div class="header-box">
         <h1>企业标志素材库</h1>
+        <p>海量企业LOGO矢量图标素材 · 一键预览下载</p>
     </div>
 
     <div class="search-wrap">
-        <input id="searchInput" placeholder="输入标志名称快速搜索..." type="text">
+        <input id="searchInput" placeholder="输入品牌/标志名称快速检索素材..." type="text">
     </div>
 
     <div id="scrollBox"></div>
@@ -231,22 +333,33 @@ const searchInput = document.getElementById("searchInput");
 
 mask.onclick = () => mask.style.display = "none";
 
-// 自动切换背景
+// 稳定可加载8张背景图
 const bgList = [
     "https://picsum.photos/id/1036/1920/1080",
     "https://picsum.photos/id/1018/1920/1080",
     "https://picsum.photos/id/1043/1920/1080",
-    "https://picsum.photos/id/1015/1920/1080"
+    "https://picsum.photos/id/1015/1920/1080",
+    "https://picsum.photos/id/1039/1920/1080",
+    "https://picsum.photos/id/1041/1920/1080",
+    "https://picsum.photos/id/1044/1920/1080",
+    "https://picsum.photos/id/1046/1080"
 ];
 let bgIndex = 0;
+// 预加载所有图片，消除切换卡顿
+const preloadImgs = [];
+bgList.forEach(url => {
+    const img = new Image();
+    img.src = url;
+    preloadImgs.push(img);
+});
+// 30秒自动切换
 setInterval(() => {
     bgIndex = (bgIndex + 1) % bgList.length;
-    document.body.style.backgroundImage = `url(${bgList[bgIndex]})`;
+    document.body.style.background = `url(${bgList[bgIndex]}) center/cover no-repeat fixed`;
 }, 30000);
 
 let allImageList = [];
 
-// 二进制强制下载函数（解决跨域CDN无法下载问题）
 async function downloadImage(url, fileName) {
     try {
         const res = await fetch(url);
@@ -262,7 +375,6 @@ async function downloadImage(url, fileName) {
     }
 }
 
-// 读取GitHub仓库图片
 async function refreshLogoList() {
     const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/images?ref=${BRANCH}`);
     const fileList = await res.json();
@@ -278,7 +390,7 @@ function renderFilterList(keyword) {
     const filterList = allImageList.filter(item => item.name.toLowerCase().includes(keyword.toLowerCase()));
 
     if (filterList.length === 0) {
-        scrollBox.innerHTML = `<div class="empty-tip">未匹配到相关标志素材</div>`;
+        scrollBox.innerHTML = `<div class="empty-tip">未匹配到相关标志素材，请更换关键词搜索</div>`;
         return;
     }
 
@@ -310,21 +422,38 @@ function renderFilterList(keyword) {
             `;
 
             let dragMoved = false;
+            let startX = 0;
+            let startY = 0;
+            const dragThreshold = 5; // 拖动超过5px判定为拖拽，不触发预览
 
-            // 点击按钮执行强制下载，阻止冒泡，不会打开大图
+            // 鼠标按下记录初始坐标
+            card.addEventListener("mousedown", (e) => {
+                dragMoved = false;
+                startX = e.clientX;
+                startY = e.clientY;
+            });
+
+            // 鼠标移动判断是否发生拖拽
+            card.addEventListener("mousemove", (e) => {
+                const dx = Math.abs(e.clientX - startX);
+                const dy = Math.abs(e.clientY - startY);
+                if (dx > dragThreshold || dy > dragThreshold) {
+                    dragMoved = true;
+                }
+            });
+
+            // 鼠标松开，仅未拖动时才打开大图
+            card.addEventListener("mouseup", () => {
+                if (!dragMoved) {
+                    bigImg.src = imgSrc;
+                    mask.style.display = "flex";
+                }
+            });
+
+            // 下载按钮单独点击，阻止冒泡
             card.querySelector(".download-btn").onclick = function (e) {
                 e.stopPropagation();
                 downloadImage(imgSrc, file.name);
-            }
-
-            // 点击卡片预览大图
-            card.onclick = function (e) {
-                if (dragMoved) {
-                    dragMoved = false;
-                    return;
-                }
-                bigImg.src = imgSrc;
-                mask.style.display = "flex";
             }
 
             inner.appendChild(card);
@@ -332,22 +461,21 @@ function renderFilterList(keyword) {
         rowWrap.appendChild(inner);
         scrollBox.appendChild(rowWrap);
 
-        // 鼠标拖拽整行滑动
+        // 原版正常拖拽逻辑
         let isDrag = false;
-        let startX = 0;
+        let dragStartX = 0;
         let dragOffset = 0;
 
         rowWrap.addEventListener("mousedown", (e) => {
             isDrag = true;
-            startX = e.clientX;
+            dragStartX = e.clientX;
             rowWrap.classList.add("paused");
         });
         document.addEventListener("mousemove", (e) => {
             if (!isDrag) return;
-            const diff = e.clientX - startX;
-            if (Math.abs(diff) > 5) dragMoved = true;
+            const diff = e.clientX - dragStartX;
             dragOffset += diff;
-            startX = e.clientX;
+            dragStartX = e.clientX;
             rowWrap.style.setProperty("--drag", dragOffset + "px");
         });
         document.addEventListener("mouseup", () => {
