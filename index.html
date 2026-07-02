@@ -236,18 +236,6 @@
     backdrop-filter: blur(12px);
     position:relative;
 }
-/* 登出按钮 */
-.logout-btn{
-    position:absolute;
-    top:16px;
-    right:20px;
-    padding:8px 16px;
-    border-radius:8px;
-    border:none;
-    background:#ff4466;
-    color:#fff;
-    cursor:pointer;
-}
 .header-box h1 {
     font-size: 38px;
     color: #00f0ff;
@@ -261,6 +249,91 @@
     font-size: 16px;
     opacity: 0.85;
     letter-spacing: 1px;
+}
+
+/* 全局右上角操作按钮组（脱离header，滚动固定） */
+.top-btn-group {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    gap: 12px;
+    /* 新增过渡隐藏样式，和天气面板统一 */
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+}
+.top-btn-group.hide-panel {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    pointer-events: none;
+}
+.logout-btn, .del-account-btn {
+    padding:8px 16px;
+    border-radius:8px;
+    border:none;
+    color:#fff;
+    cursor:pointer;
+    transition:0.2s;
+}
+.logout-btn {
+    background:#ff4466;
+}
+.del-account-btn {
+    background:#ff8822;
+}
+.logout-btn:hover, .del-account-btn:hover {
+    opacity:0.85;
+}
+
+/* 注销弹窗遮罩 */
+.del-modal {
+    position: fixed;
+    inset:0;
+    background:rgba(0,0,0,0.75);
+    z-index:99999;
+    display:none;
+    align-items:center;
+    justify-content:center;
+}
+.del-modal.show {
+    display:flex;
+}
+.del-box {
+    width:360px;
+    background:#0a1022;
+    border:1px solid rgba(255,100,120,0.4);
+    border-radius:16px;
+    padding:28px;
+}
+.del-box h3 {
+    color:#ff8899;
+    text-align:center;
+    margin-bottom:20px;
+    font-size:20px;
+}
+.del-btn-wrap {
+    display:flex;
+    gap:10px;
+    margin-top:16px;
+}
+.del-cancel, .del-confirm {
+    flex:1;
+    padding:12px;
+    border-radius:8px;
+    border:none;
+    color:#fff;
+    font-size:15px;
+    cursor:pointer;
+}
+.del-cancel {
+    background:#333;
+}
+.del-confirm {
+    background:#ff4466;
 }
 
 .search-wrap {
@@ -404,6 +477,10 @@
     }
     .left-text-wrap h1 {
         font-size: 32px;
+    }
+    .top-btn-group {
+        flex-direction:column;
+        gap:8px;
     }
 }
 @media screen and (max-width: 768px) {
@@ -635,9 +712,31 @@
 
 <!-- 素材主页面 -->
 <div class="main-site" id="mainSite">
-    <!-- 登出按钮 -->
-    <div class="header-box">
+    <!-- 全局右上角按钮组（固定悬浮，滚动同步隐藏） -->
+    <div class="top-btn-group" id="topBtnWrap">
         <button class="logout-btn" id="logoutBtn">退出登录</button>
+        <button class="del-account-btn" id="openDelModal">注销账号</button>
+    </div>
+
+    <!-- 账号注销弹窗 -->
+    <div class="del-modal" id="delModal">
+        <div class="del-box">
+            <h3>永久注销账号</h3>
+            <div class="input-box">
+                <input type="text" id="delName" placeholder="输入要注销的账号">
+            </div>
+            <div class="input-box">
+                <input type="password" id="delPwd" placeholder="输入该账号密码">
+            </div>
+            <div class="form-tip" id="delTip"></div>
+            <div class="del-btn-wrap">
+                <button class="del-cancel" id="closeDelModal">取消</button>
+                <button class="del-confirm" id="confirmDel">确认注销</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-box">
         <h1>企业标志素材库</h1>
         <p>海量企业LOGO矢量图标素材 · 一键预览下载</p>
     </div>
@@ -700,6 +799,16 @@ bgVideo.load();
 const loginPage = document.getElementById('loginPage');
 const mainSite = document.getElementById('mainSite');
 const logoutBtn = document.getElementById('logoutBtn');
+const topBtnWrap = document.getElementById('topBtnWrap'); // 右上角按钮容器
+
+// 注销弹窗DOM
+const delModal = document.getElementById('delModal');
+const openDelModal = document.getElementById('openDelModal');
+const closeDelModal = document.getElementById('closeDelModal');
+const confirmDel = document.getElementById('confirmDel');
+const delName = document.getElementById('delName');
+const delPwd = document.getElementById('delPwd');
+const delTip = document.getElementById('delTip');
 
 // 提示框DOM
 const loginTip = document.getElementById('loginTip');
@@ -758,10 +867,11 @@ function showTip(el, text) {
         el.classList.remove('show');
     }, 3000);
 }
-// 清除提示
+// 清除全部提示
 function clearAllTip() {
     loginTip.classList.remove('show');
     regTip.classList.remove('show');
+    delTip.classList.remove('show');
 }
 
 // 切换登录/注册表单
@@ -821,22 +931,55 @@ loginBtn.onclick = () => {
 
 // 退出登录，清除缓存，强制回到登录页
 logoutBtn.onclick = () => {
-    localStorage.removeItem('isStaffLogin');
     loginPage.style.display = 'flex';
     mainSite.classList.remove('unlock');
+}
+
+// 注销弹窗打开关闭
+openDelModal.onclick = () => {
+    clearAllTip();
+    delModal.classList.add('show');
+}
+closeDelModal.onclick = () => {
+    delModal.classList.remove('show');
+    delName.value = '';
+    delPwd.value = '';
+}
+
+// 账号注销核心逻辑
+confirmDel.onclick = () => {
+    clearAllTip();
+    const delUser = delName.value.trim();
+    const delPass = delPwd.value.trim();
+    if(!delUser || !delPass) return showTip(delTip, '账号和密码不能为空！');
+    let accountArr = getStaffAccounts();
+    // 查找匹配账号密码
+    const targetIndex = accountArr.findIndex(item => item.username === delUser && item.password === delPass);
+    if(targetIndex === -1) return showTip(delTip, '账号或密码不匹配，无法注销');
+    // 删除该账号
+    accountArr.splice(targetIndex, 1);
+    saveStaffAccounts(accountArr);
+    showTip(delTip, '账号已永久注销，弹窗1.5秒关闭');
+    setTimeout(()=>{
+        delModal.classList.remove('show');
+        delName.value = '';
+        delPwd.value = '';
+    },1500);
 }
 
 // 页面加载：无自动登录，强制显示登录界面
 window.onload = () => {};
 
-// 滚动监听 下滑隐藏天气面板
+// 滚动监听 下滑同时隐藏天气面板 + 右上角退出注销按钮
 let lastScrollY = 0;
 window.addEventListener('scroll', () => {
     const currentY = window.scrollY;
     if (currentY > 80) {
         weatherPanel.classList.add('hide-panel');
+        topBtnWrap.classList.add('hide-panel');
     } else {
         weatherPanel.classList.remove('hide-panel');
+        topBtnWrap.classList.remove('hide-panel');
     }
     lastScrollY = currentY;
 })
