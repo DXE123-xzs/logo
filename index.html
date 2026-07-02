@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>企业标志素材库 | LOGO资源中心</title>
+<title>企业标志素材库 | 登录</title>
 <style>
 * {
     margin: 0;
@@ -12,19 +12,190 @@
     font-family: "Microsoft YaHei", system-ui, -apple-system, sans-serif;
 }
 
-body {
+/* 登录分栏页面（最高层级，永久盖住页面，强制拦截访问） */
+.login-page {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    pointer-events: all;
+    background:#000;
+}
+.login-left {
+    width: 55%;
+    position: relative;
+    overflow: hidden;
+}
+/* 左侧全屏视频 */
+.left-bg-video {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
+.login-left::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,10,30,0.55);
+    z-index: 2;
+}
+.left-text-wrap {
+    position: absolute;
+    z-index: 3;
+    left: 80px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fff;
+}
+.left-text-wrap h1 {
+    font-size: 48px;
+    color: #00f0ff;
+    text-shadow: 0 0 20px #00e5ff70;
+    letter-spacing: 4px;
+    margin-bottom: 20px;
+}
+.left-text-wrap p {
+    font-size: 18px;
+    color: #b8e6ff;
+    line-height: 1.8;
+    max-width: 480px;
+}
+
+.login-right {
+    width: 45%;
+    background: linear-gradient(145deg, #050a1a, #0a1430);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+.login-card {
+    width: 100%;
+    max-width: 420px;
+    pointer-events: all;
+}
+.login-card-title {
+    font-size: 32px;
+    color: #fff;
+    margin-bottom: 30px;
+    text-align: center;
+}
+.tab-switch {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid rgba(0,229,255,0.2);
+}
+.tab-switch button {
+    flex: 1;
+    padding: 12px 0;
+    background: transparent;
+    border: none;
+    color: #94b8e0;
+    font-size: 16px;
+    cursor: pointer;
+    position: relative;
+}
+.tab-switch button.active {
+    color: #00f0ff;
+}
+.tab-switch button.active::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg,#00e5ff,#a840ff);
+}
+.input-box {
+    margin-bottom: 20px;
+}
+.input-box input {
+    width: 100%;
+    padding: 15px 18px;
+    border-radius: 10px;
+    border: 1px solid rgba(0,229,255,0.25);
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+    transition: 0.3s;
+}
+.input-box input:focus {
+    border-color: #00e5ff;
+    box-shadow: 0 0 12px rgba(0,229,255,0.2);
+}
+.input-box input::placeholder {
+    color: #778fb8;
+}
+.submit-btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(90deg,#00e5ff,#a840ff);
+    color: #fff;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: 0.3s;
+}
+.submit-btn:hover {
+    box-shadow: 0 0 18px rgba(0,229,255,0.4);
+}
+.tips-desc {
+    text-align: center;
+    margin-top: 20px;
+    color: #778fb8;
+    font-size: 14px;
+}
+#registerForm {
+    display: none;
+}
+
+/* 表单局部提示框样式（美化） */
+.form-tip {
+    width: 100%;
+    padding: 10px 14px;
+    margin-top: 12px;
+    border-radius: 8px;
+    background: rgba(20, 10, 30, 0.75);
+    border: 1px solid rgba(255,80,120,0.4);
+    color: #ff8899;
+    font-size: 14px;
+    text-align: center;
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.form-tip.show {
+    opacity: 1;
+    height: auto;
+}
+
+/* 主素材页面 默认锁定，必须手动登录解锁 */
+.main-site {
     min-height: 100vh;
     background: url('https://picsum.photos/id/1036/1920/1080') center/cover no-repeat fixed;
     position: relative;
     overflow-x: hidden;
+    opacity: 0.15;
+    pointer-events: none;
     transition: background 0.8s ease, opacity 0.6s ease;
-    opacity: 0;
-    animation: pageFadeIn 1s ease forwards;
 }
-@keyframes pageFadeIn {
-    to { opacity: 1; }
+/* 只有登录成功才激活页面 */
+.main-site.unlock {
+    opacity: 1;
+    pointer-events: all;
 }
-body::before {
+.main-site::before {
     content: "";
     position: fixed;
     inset: 0;
@@ -63,6 +234,19 @@ body::before {
     text-align: center;
     max-width: 860px;
     backdrop-filter: blur(12px);
+    position:relative;
+}
+/* 登出按钮 */
+.logout-btn{
+    position:absolute;
+    top:16px;
+    right:20px;
+    padding:8px 16px;
+    border-radius:8px;
+    border:none;
+    background:#ff4466;
+    color:#fff;
+    cursor:pointer;
 }
 .header-box h1 {
     font-size: 38px;
@@ -105,7 +289,7 @@ body::before {
     transform: translateY(-2px);
 }
 
-/* 左上角天气面板 再次放大 */
+/* 左上角天气面板 */
 .time-weather-panel {
     position: fixed;
     top: 8px;
@@ -154,7 +338,7 @@ body::before {
     font-size: 24px;
 }
 
-/* 音乐播放器样式 */
+/* 音乐播放器 */
 .music-box {
     margin-top: 12px;
     padding-top: 10px;
@@ -206,6 +390,22 @@ body::before {
 }
 
 /* 移动端适配 */
+@media screen and (max-width: 900px) {
+    .login-page {
+        flex-direction: column;
+    }
+    .login-left, .login-right {
+        width: 100%;
+        height: 50vh;
+    }
+    .left-text-wrap {
+        left: 30px;
+        right: 30px;
+    }
+    .left-text-wrap h1 {
+        font-size: 32px;
+    }
+}
 @media screen and (max-width: 768px) {
     .time-weather-panel {
         top: 6px;
@@ -380,95 +580,103 @@ body::before {
     letter-spacing: 1px;
     opacity: 0.75;
 }
-
-@media screen and (max-width: 768px) {
-    .container {
-        padding: 32px 16px;
-    }
-    .header-box {
-        padding: 32px 20px;
-        border-radius: 20px;
-    }
-    .header-box h1 {
-        font-size: 28px;
-    }
-    .header-box p {
-        font-size: 14px;
-    }
-    #searchInput {
-        padding: 14px 22px;
-        font-size: 16px;
-    }
-    .scroll-row-inner {
-        animation: none !important;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 24px;
-    }
-    .scroll-row {
-        mask-image: none;
-        -webkit-mask-image: none;
-    }
-    .logo-card {
-        width: 102px;
-        height: 102px;
-    }
-    .logo-card img {
-        width: 60px;
-        height: 60px;
-    }
-    .scroll-row {
-        margin: 16px 0;
-    }
-    .preview-img {
-        border-width: 2px;
-    }
-}
 </style>
 </head>
 <body>
-<!-- 左上角时间天气面板 -->
-<div class="time-weather-panel" id="weatherPanel">
-    <div class="time-text" id="timeBox">00:00</div>
-    <div class="date-text" id="dateBox">2026年07月01日 星期三</div>
-    <div class="weather-row">
-        <span class="weather-icon" id="weatherIcon">🌤️</span>
-        <span id="weatherText">加载天气...</span>
+<!-- 全屏强制登录遮罩，永远置顶 -->
+<div class="login-page" id="loginPage">
+    <div class="login-left">
+        <!-- 视频容器，JS自动随机赋值src -->
+        <video class="left-bg-video" autoplay muted loop playsinline id="bgVideo">
+        </video>
+        <div class="left-text-wrap">
+            <h1>企业标志素材库</h1>
+            <p>海量矢量标志素材，一键预览下载<br>统一素材管理，高效协作办公</p>
+        </div>
     </div>
-    <!-- 内置音乐播放器 -->
-    <div class="music-box">
-        <div class="music-top">
-            <button class="play-btn" id="playBtn">▶</button>
-            <div class="play-progress" id="progressWrap">
-                <div class="progress-inner" id="progressBar"></div>
+    <div class="login-right">
+        <div class="login-card">
+            <h2 class="login-card-title">账号登录</h2>
+            <div class="tab-switch">
+                <button class="tab-btn active" id="loginTab">登录</button>
+                <button class="tab-btn" id="regTab">注册账号</button>
             </div>
-            <input type="range" class="volume-slider" id="volumeCtrl" min="0" max="1" step="0.05" value="0.5">
-        </div>
-        <div class="music-time">
-            <span id="currentTime">00:00</span>
-            <span id="totalTime">00:00</span>
+            <!-- 登录表单 -->
+            <div id="loginForm">
+                <div class="input-box">
+                    <input type="text" id="loginUser" placeholder="输入你的账号">
+                </div>
+                <div class="input-box">
+                    <input type="password" id="loginPwd" placeholder="输入登录密码">
+                </div>
+                <button class="submit-btn" id="loginBtn">登录进入素材库</button>
+                <!-- 登录局部提示框 -->
+                <div class="form-tip" id="loginTip"></div>
+            </div>
+            <!-- 注册表单 -->
+            <div id="registerForm">
+                <div class="input-box">
+                    <input type="text" id="regUser" placeholder="自定义账号名称">
+                </div>
+                <div class="input-box">
+                    <input type="password" id="regPwd" placeholder="设置登录密码">
+                </div>
+                <div class="input-box">
+                    <input type="password" id="regPwd2" placeholder="再次输入密码确认">
+                </div>
+                <button class="submit-btn" id="regBtn">完成注册</button>
+                <!-- 注册局部提示框 -->
+                <div class="form-tip" id="regTip"></div>
+                <div class="tips-desc">注册后即可登录查看全部素材</div>
+            </div>
         </div>
     </div>
-    <!-- 音频：GitHub CDN直链 出现又离开.mp3 -->
-    <audio id="audioPlayer" loop volume="0.5">
-        <source src="https://cdn.jsdelivr.net/gh/DXE123-xzs/logo@main/出现又离开.mp3" type="audio/mpeg">
-    </div>
+</div>
 
-<div class="container">
+<!-- 素材主页面 -->
+<div class="main-site" id="mainSite">
+    <!-- 登出按钮 -->
     <div class="header-box">
+        <button class="logout-btn" id="logoutBtn">退出登录</button>
         <h1>企业标志素材库</h1>
         <p>海量企业LOGO矢量图标素材 · 一键预览下载</p>
+    </div>
+
+    <!-- 左上角天气+音乐面板 -->
+    <div class="time-weather-panel" id="weatherPanel">
+        <div class="time-text" id="timeBox">00:00</div>
+        <div class="date-text" id="dateBox">2026年07月01日 星期三</div>
+        <div class="weather-row">
+            <span class="weather-icon" id="weatherIcon">🌤️</span>
+            <span id="weatherText">加载天气...</span>
+        </div>
+        <div class="music-box">
+            <div class="music-top">
+                <button class="play-btn" id="playBtn">▶</button>
+                <div class="play-progress" id="progressWrap">
+                    <div class="progress-inner" id="progressBar"></div>
+                </div>
+                <input type="range" class="volume-slider" id="volumeCtrl" min="0" max="1" step="0.05" value="0.5">
+            </div>
+            <div class="music-time">
+                <span id="currentTime">00:00</span>
+                <span id="totalTime">00:00</span>
+            </div>
+        </div>
+        <!-- 原音乐链接不变 -->
+        <audio id="audioPlayer" loop volume="0.5">
+            <source src="https://cdn.jsdelivr.net/gh/DXE123-xzs/logo@main/出现又离开.mp3" type="audio/mpeg">
+        
     </div>
 
     <div class="search-wrap">
         <input id="searchInput" placeholder="输入品牌/标志名称快速检索素材..." type="text">
     </div>
-
     <div id="scrollBox"></div>
-</div>
 
-<div class="preview-mask" id="mask">
-    <img class="preview-img" id="bigImg">
+    <div class="preview-mask" id="mask">
+        <img class="preview-img" id="bigImg">
+    </div>
 </div>
 
 <script>
@@ -476,18 +684,52 @@ const OWNER = "DXE123-xzs";
 const REPO = "logo";
 const BRANCH = "main";
 
+// 随机视频逻辑（3个视频存放在仓库video文件夹）
+const videoList = [
+    `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/video/1.mp4`,
+    `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/video/2.mp4`,
+    `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/video/3.mp4`
+];
+const bgVideo = document.getElementById('bgVideo');
+// 随机取一个
+const randomVideo = videoList[Math.floor(Math.random() * videoList.length)];
+bgVideo.innerHTML = `<source src="${randomVideo}" type="video/mp4">`;
+bgVideo.load();
+
+// 页面DOM
+const loginPage = document.getElementById('loginPage');
+const mainSite = document.getElementById('mainSite');
+const logoutBtn = document.getElementById('logoutBtn');
+
+// 提示框DOM
+const loginTip = document.getElementById('loginTip');
+const regTip = document.getElementById('regTip');
+
+// 登录注册标签
+const loginTab = document.getElementById('loginTab');
+const regTab = document.getElementById('regTab');
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+// 登录表单
+const loginUser = document.getElementById('loginUser');
+const loginPwd = document.getElementById('loginPwd');
+const loginBtn = document.getElementById('loginBtn');
+// 注册表单
+const regUser = document.getElementById('regUser');
+const regPwd = document.getElementById('regPwd');
+const regPwd2 = document.getElementById('regPwd2');
+const regBtn = document.getElementById('regBtn');
+
+// 素材页面DOM
 const mask = document.getElementById("mask");
 const bigImg = document.getElementById("bigImg");
 const scrollBox = document.getElementById("scrollBox");
 const searchInput = document.getElementById("searchInput");
 const weatherPanel = document.getElementById("weatherPanel");
-
-// 时间天气DOM
 const timeBox = document.getElementById("timeBox");
 const dateBox = document.getElementById("dateBox");
 const weatherIcon = document.getElementById("weatherIcon");
 const weatherText = document.getElementById("weatherText");
-
 // 音乐DOM
 const audioPlayer = document.getElementById("audioPlayer");
 const playBtn = document.getElementById("playBtn");
@@ -499,11 +741,98 @@ const totalTimeEl = document.getElementById("totalTime");
 
 mask.onclick = () => mask.style.display = "none";
 
-// 滚动监听：向下滚动隐藏面板，回到顶部显示
+// 账号本地存储工具
+function getStaffAccounts() {
+    const data = localStorage.getItem('staffAccountList');
+    return data ? JSON.parse(data) : [];
+}
+function saveStaffAccounts(list) {
+    localStorage.setItem('staffAccountList', JSON.stringify(list));
+}
+
+// 统一展示表单提示（替换alert，3秒自动消失）
+function showTip(el, text) {
+    el.textContent = text;
+    el.classList.add('show');
+    setTimeout(() => {
+        el.classList.remove('show');
+    }, 3000);
+}
+// 清除提示
+function clearAllTip() {
+    loginTip.classList.remove('show');
+    regTip.classList.remove('show');
+}
+
+// 切换登录/注册表单
+loginTab.onclick = () => {
+    clearAllTip();
+    loginTab.classList.add('active');
+    regTab.classList.remove('active');
+    loginForm.style.display = 'block';
+    registerForm.style.display = 'none';
+}
+regTab.onclick = () => {
+    clearAllTip();
+    regTab.classList.add('active');
+    loginTab.classList.remove('active');
+    registerForm.style.display = 'block';
+    loginForm.style.display = 'none';
+}
+
+// 注册逻辑（全部替换alert为局部提示）
+regBtn.onclick = () => {
+    clearAllTip();
+    const u = regUser.value.trim();
+    const p = regPwd.value.trim();
+    const p2 = regPwd2.value.trim();
+    if(!u || !p) return showTip(regTip, '账号和密码不能为空！');
+    if(p !== p2) return showTip(regTip, '两次输入的密码不一致！');
+    const accountList = getStaffAccounts();
+    if(accountList.find(item => item.username === u)) return showTip(regTip, '该账号已注册，请直接登录');
+    accountList.push({username: u, password: p});
+    saveStaffAccounts(accountList);
+    showTip(regTip, '注册成功！请切换到登录页面登录');
+    setTimeout(()=>{
+        loginTab.click();
+        regUser.value = regPwd.value = regPwd2.value = '';
+    },1500);
+}
+
+// 登录成功函数
+function enterMainPage() {
+    loginPage.style.display = 'none';
+    mainSite.classList.add('unlock');
+    refreshLogoList();
+}
+loginBtn.onclick = () => {
+    clearAllTip();
+    const u = loginUser.value.trim();
+    const p = loginPwd.value.trim();
+    if(!u || !p) return showTip(loginTip, '账号和密码不能为空！');
+    const list = getStaffAccounts();
+    const match = list.find(item => item.username === u && item.password === p);
+    if(match) {
+        enterMainPage();
+    } else {
+        showTip(loginTip, '账号或密码错误，请核对后重试');
+    }
+}
+
+// 退出登录，清除缓存，强制回到登录页
+logoutBtn.onclick = () => {
+    localStorage.removeItem('isStaffLogin');
+    loginPage.style.display = 'flex';
+    mainSite.classList.remove('unlock');
+}
+
+// 页面加载：无自动登录，强制显示登录界面
+window.onload = () => {};
+
+// 滚动监听 下滑隐藏天气面板
 let lastScrollY = 0;
 window.addEventListener('scroll', () => {
     const currentY = window.scrollY;
-    // 滚动超过80px 隐藏
     if (currentY > 80) {
         weatherPanel.classList.add('hide-panel');
     } else {
@@ -512,7 +841,7 @@ window.addEventListener('scroll', () => {
     lastScrollY = currentY;
 })
 
-// 时间日期每秒自动更新
+// 实时时间日期
 function updateDateTime() {
     const now = new Date();
     const year = now.getFullYear();
@@ -522,60 +851,45 @@ function updateDateTime() {
     const mins = String(now.getMinutes()).padStart(2, "0");
     const weekArr = ["星期日","星期一","星期二","星期三","星期四","星期五","星期六"];
     const week = weekArr[now.getDay()];
-    
     timeBox.textContent = `${hours}:${mins}`;
     dateBox.textContent = `${year}年${month}月${day} ${week}`;
 }
 updateDateTime();
 setInterval(updateDateTime, 1000);
 
-// 内置天气图标映射
+// 天气图标映射
 const weatherEmojiMap = {
     "晴":"☀️", "多云":"⛅", "阴":"☁️", "小雨":"🌧️", "中雨":"🌧️", "大雨":"🌧️",
     "雷阵雨":"⛈️", "小雪":"❄️", "大雪":"❄️", "雾":"🌫️", "霾":"🌫️"
 };
-
-// 兜底静态天气（接口失效时永久显示这个，不再报网络异常）
 function setDefaultWeather() {
     weatherIcon.textContent = "⛅";
     weatherText.textContent = "济南 多云";
 }
-
-// 加载天气，失败自动切换静态兜底
 async function getWeather() {
-    // 先加载默认兜底，防止空白
     setDefaultWeather();
     try {
-        // 使用可跨域公开天气接口
         const res = await fetch("https://www.weatherapi.com/api-explorer.aspx/v1/current.json?key=demo&q=jinan&aqi=no");
-        if (!res.ok) throw new Error("接口失败");
+        if (!res.ok) throw new Error();
         const data = await res.json();
         const wText = data.current.condition.text;
         const temp = data.current.temp_c;
-        let icon = weatherEmojiMap[wText] || "⛅";
-        weatherIcon.textContent = icon;
+        weatherIcon.textContent = weatherEmojiMap[wText] || "⛅";
         weatherText.textContent = `${wText} ${temp}℃`;
     } catch(err) {
-        // 接口请求失败，保留上面设置好的默认天气，不报错文字
-        console.log("天气接口无法访问，使用本地静态天气");
+        console.log('天气接口加载失败，使用默认天气');
     }
 }
-
-// 页面加载立刻执行
 getWeather();
-// 每小时刷新一次天气
 setInterval(getWeather, 3600000);
 
-// ====== 音乐播放器逻辑 ======
-// 格式化时间 秒 -> mm:ss
+// 音乐播放器逻辑
 function formatSec(sec) {
     const m = Math.floor(sec / 60).toString().padStart(2, "0");
     const s = Math.floor(sec % 60).toString().padStart(2, "0");
     return m + ":" + s;
 }
-
-// 播放暂停切换
-playBtn.addEventListener("click", () => {
+playBtn.onclick = () => {
     if(audioPlayer.paused) {
         audioPlayer.play();
         playBtn.textContent = "⏸";
@@ -583,34 +897,22 @@ playBtn.addEventListener("click", () => {
         audioPlayer.pause();
         playBtn.textContent = "▶";
     }
-});
-
-// 音量调节
-volumeCtrl.addEventListener("input", () => {
-    audioPlayer.volume = volumeCtrl.value;
-});
-
-// 音频加载完成获取总时长
-audioPlayer.addEventListener("loadedmetadata", () => {
-    totalTimeEl.textContent = formatSec(audioPlayer.duration);
-});
-
-// 实时更新进度条
-audioPlayer.addEventListener("timeupdate", () => {
-    const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-    progressBar.style.width = percent + "%";
+}
+volumeCtrl.oninput = () => audioPlayer.volume = volumeCtrl.value;
+audioPlayer.addEventListener('loadedmetadata', () => totalTimeEl.textContent = formatSec(audioPlayer.duration));
+audioPlayer.addEventListener('timeupdate', () => {
+    const per = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+    progressBar.style.width = per + "%";
     currentTimeEl.textContent = formatSec(audioPlayer.currentTime);
 });
-
-// 点击进度条跳转播放位置
-progressWrap.addEventListener("click", (e) => {
+progressWrap.onclick = (e) => {
     const rect = progressWrap.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const ratio = clickX / rect.width;
-    audioPlayer.currentTime = audioPlayer.duration * ratio;
-});
+    const x = e.clientX - rect.left;
+    const rate = x / rect.width;
+    audioPlayer.currentTime = audioPlayer.duration * rate;
+}
 
-// 背景轮播
+// 背景自动轮播
 const bgList = [
     "https://picsum.photos/id/1036/1920/1080",
     "https://picsum.photos/id/1018/1920/1080",
@@ -630,11 +932,10 @@ bgList.forEach(url => {
 });
 setInterval(() => {
     bgIndex = (bgIndex + 1) % bgList.length;
-    document.body.style.background = `url(${bgList[bgIndex]}) center/cover no-repeat fixed`;
+    document.querySelector('.main-site').style.background = `url(${bgList[bgIndex]}) center/cover no-repeat fixed`;
 }, 30000);
 
 let allImageList = [];
-
 async function downloadImage(url, fileName) {
     try {
         const res = await fetch(url);
@@ -649,7 +950,6 @@ async function downloadImage(url, fileName) {
         window.open(url, "_blank");
     }
 }
-
 async function refreshLogoList() {
     const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/images?ref=${BRANCH}`);
     const fileList = await res.json();
@@ -658,34 +958,26 @@ async function refreshLogoList() {
     allImageList = fileList.filter(file => /\.(png|jpg|jpeg|svg|ico)$/i.test(file.name));
     renderFilterList("");
 }
-
 function renderFilterList(keyword) {
     scrollBox.innerHTML = "";
     const isSearch = keyword.trim() !== "";
     const filterList = allImageList.filter(item => item.name.toLowerCase().includes(keyword.toLowerCase()));
-
     if (filterList.length === 0) {
         scrollBox.innerHTML = `<div class="empty-tip">未匹配到相关标志素材，请更换关键词搜索</div>`;
         return;
     }
-
     const rowSize = 8;
     const totalRow = Math.ceil(filterList.length / rowSize);
     for (let r = 0; r < totalRow; r++) {
         const rowData = filterList.slice(r * rowSize, (r + 1) * rowSize);
         const listDouble = [...rowData, ...rowData];
         const rowClass = r % 2 === 0 ? "scroll-row row-left" : "scroll-row row-right";
-
         const rowWrap = document.createElement("div");
         rowWrap.className = rowClass;
         rowWrap.style.setProperty("--drag", "0px");
         const inner = document.createElement("div");
         inner.className = "scroll-row-inner";
-
-        if (isSearch) {
-            inner.style.animation = "none";
-        }
-
+        if (isSearch) inner.style.animation = "none";
         listDouble.forEach(file => {
             const imgSrc = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/images/${file.name}`;
             const card = document.createElement("div");
@@ -695,29 +987,27 @@ function renderFilterList(keyword) {
                 <div class="logo-name" title="${file.name}">${file.name}</div>
                 <div class="download-btn">下载原图</div>
             `;
-
             let dragMoved = false;
             let startX = 0;
             let startY = 0;
             const dragThreshold = 5;
-
-            card.addEventListener("mousedown", (e) => {
+            card.onmousedown = (e) => {
                 dragMoved = false;
                 startX = e.clientX;
                 startY = e.clientY;
-            });
-            card.addEventListener("mousemove", (e) => {
+            }
+            card.onmousemove = (e) => {
                 const dx = Math.abs(e.clientX - startX);
                 const dy = Math.abs(e.clientY - startY);
                 if (dx > dragThreshold || dy > dragThreshold) dragMoved = true;
-            });
-            card.addEventListener("mouseup", () => {
+            }
+            card.onmouseup = () => {
                 if (!dragMoved) {
                     bigImg.src = imgSrc;
                     mask.style.display = "flex";
                 }
-            });
-            card.querySelector(".download-btn").onclick = function (e) {
+            }
+            card.querySelector(".download-btn").onclick = (e) => {
                 e.stopPropagation();
                 downloadImage(imgSrc, file.name);
             }
@@ -726,33 +1016,35 @@ function renderFilterList(keyword) {
         rowWrap.appendChild(inner);
         scrollBox.appendChild(rowWrap);
 
-        let isDrag = false;
-        let dragStartX = 0;
-        let dragOffset = 0;
-        rowWrap.addEventListener("mousedown", (e) => {
-            isDrag = true;
-            dragStartX = e.clientX;
-            rowWrap.classList.add("paused");
-        });
-        document.addEventListener("mousemove", (e) => {
-            if (!isDrag) return;
-            const diff = e.clientX - dragStartX;
-            dragOffset += diff;
-            dragStartX = e.clientX;
-            rowWrap.style.setProperty("--drag", dragOffset + "px");
-        });
-        document.addEventListener("mouseup", () => {
-            isDrag = false;
+        // 独立拖拽监听，多行不冲突
+        let dragState = {
+            isDrag: false,
+            dragStartX: 0,
+            dragOffset: 0
+        };
+        function onMove(e) {
+            if (!dragState.isDrag) return;
+            const diff = e.clientX - dragState.dragStartX;
+            dragState.dragOffset += diff;
+            dragState.dragStartX = e.clientX;
+            rowWrap.style.setProperty("--drag", dragState.dragOffset + "px");
+        }
+        function onUp() {
+            dragState.isDrag = false;
             rowWrap.classList.remove("paused");
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+        }
+        rowWrap.addEventListener('mousedown', (e) => {
+            dragState.isDrag = true;
+            dragState.dragStartX = e.clientX;
+            rowWrap.classList.add("paused");
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
         });
     }
 }
-
-searchInput.addEventListener("input", (e) => {
-    renderFilterList(e.target.value);
-});
-
-refreshLogoList();
+searchInput.addEventListener("input", (e) => renderFilterList(e.target.value));
 </script>
 </body>
 </html>
