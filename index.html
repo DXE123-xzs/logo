@@ -153,6 +153,58 @@ body::before {
 .weather-icon {
     font-size: 24px;
 }
+
+/* 音乐播放器样式 */
+.music-box {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(0,229,255,0.2);
+}
+.music-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+.play-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(90deg,#00e5ff,#a840ff);
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+}
+.play-progress {
+    flex: 1;
+    height: 4px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.15);
+    cursor: pointer;
+    position: relative;
+}
+.progress-inner {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg,#00e5ff,#a840ff);
+    width: 0%;
+}
+.volume-slider {
+    width: 60px;
+    height: 4px;
+}
+.music-time {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #b8e6ff;
+    margin-top: 4px;
+}
+
 /* 移动端适配 */
 @media screen and (max-width: 768px) {
     .time-weather-panel {
@@ -169,6 +221,14 @@ body::before {
     }
     .weather-icon {
         font-size: 20px;
+    }
+    .play-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+    .volume-slider {
+        width: 45px;
     }
 }
 
@@ -375,7 +435,24 @@ body::before {
         <span class="weather-icon" id="weatherIcon">🌤️</span>
         <span id="weatherText">加载天气...</span>
     </div>
-</div>
+    <!-- 内置音乐播放器 -->
+    <div class="music-box">
+        <div class="music-top">
+            <button class="play-btn" id="playBtn">▶</button>
+            <div class="play-progress" id="progressWrap">
+                <div class="progress-inner" id="progressBar"></div>
+            </div>
+            <input type="range" class="volume-slider" id="volumeCtrl" min="0" max="1" step="0.05" value="0.5">
+        </div>
+        <div class="music-time">
+            <span id="currentTime">00:00</span>
+            <span id="totalTime">00:00</span>
+        </div>
+    </div>
+    <!-- 音频：GitHub CDN直链 出现又离开.mp3 -->
+    <audio id="audioPlayer" loop volume="0.5">
+        <source src="https://cdn.jsdelivr.net/gh/DXE123-xzs/logo@main/出现又离开.mp3" type="audio/mpeg">
+    </div>
 
 <div class="container">
     <div class="header-box">
@@ -410,6 +487,15 @@ const timeBox = document.getElementById("timeBox");
 const dateBox = document.getElementById("dateBox");
 const weatherIcon = document.getElementById("weatherIcon");
 const weatherText = document.getElementById("weatherText");
+
+// 音乐DOM
+const audioPlayer = document.getElementById("audioPlayer");
+const playBtn = document.getElementById("playBtn");
+const progressWrap = document.getElementById("progressWrap");
+const progressBar = document.getElementById("progressBar");
+const volumeCtrl = document.getElementById("volumeCtrl");
+const currentTimeEl = document.getElementById("currentTime");
+const totalTimeEl = document.getElementById("totalTime");
 
 mask.onclick = () => mask.style.display = "none";
 
@@ -479,6 +565,50 @@ async function getWeather() {
 getWeather();
 // 每小时刷新一次天气
 setInterval(getWeather, 3600000);
+
+// ====== 音乐播放器逻辑 ======
+// 格式化时间 秒 -> mm:ss
+function formatSec(sec) {
+    const m = Math.floor(sec / 60).toString().padStart(2, "0");
+    const s = Math.floor(sec % 60).toString().padStart(2, "0");
+    return m + ":" + s;
+}
+
+// 播放暂停切换
+playBtn.addEventListener("click", () => {
+    if(audioPlayer.paused) {
+        audioPlayer.play();
+        playBtn.textContent = "⏸";
+    } else {
+        audioPlayer.pause();
+        playBtn.textContent = "▶";
+    }
+});
+
+// 音量调节
+volumeCtrl.addEventListener("input", () => {
+    audioPlayer.volume = volumeCtrl.value;
+});
+
+// 音频加载完成获取总时长
+audioPlayer.addEventListener("loadedmetadata", () => {
+    totalTimeEl.textContent = formatSec(audioPlayer.duration);
+});
+
+// 实时更新进度条
+audioPlayer.addEventListener("timeupdate", () => {
+    const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+    progressBar.style.width = percent + "%";
+    currentTimeEl.textContent = formatSec(audioPlayer.currentTime);
+});
+
+// 点击进度条跳转播放位置
+progressWrap.addEventListener("click", (e) => {
+    const rect = progressWrap.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const ratio = clickX / rect.width;
+    audioPlayer.currentTime = audioPlayer.duration * ratio;
+});
 
 // 背景轮播
 const bgList = [
