@@ -687,6 +687,77 @@
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
+.reset-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+.reset-modal.show {
+    display: flex;
+}
+.modal-box {
+    width: 360px;
+    background: #0f141e;
+    padding: 26px;
+    border-radius: 14px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.modal-box h3 {
+    text-align: center;
+    margin: 0;
+    color: #0cf;
+}
+.modal-box input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 14px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #1a2233;
+    color: #fff;
+    font-size: 14px;
+}
+.code-row {
+    display: flex;
+    gap: 10px;
+}
+#sendCodeBtn {
+    white-space: nowrap;
+    padding: 0 14px;
+    background: linear-gradient(90deg,#0cf,#83f);
+    border: none;
+    border-radius: 8px;
+    color: #000;
+    cursor: pointer;
+}
+.modal-btns {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+}
+.modal-btns button {
+    flex: 1;
+    padding: 11px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+#closeReset {
+    background: #333;
+    color: #fff;
+}
+#submitReset {
+    background: linear-gradient(90deg,#0cf,#83f);
+    color: #000;
+}
 </style>
 </head>
 <body>
@@ -722,6 +793,22 @@
     <div class="form-tip" id="loginTip"></div>
 </div>
 
+<div class="reset-modal" id="resetModal">
+    <div class="modal-box">
+      <h3>邮箱验证码重置密码</h3>
+      <input type="email" id="resetEmail" placeholder="请输入注册时的邮箱">
+      <div class="code-row">
+        <input type="text" id="resetCode" placeholder="6位数字验证码" maxlength="6">
+        <button id="sendCodeBtn">发送验证码</button>
+      </div>
+      <input type="password" id="newPwd" placeholder="设置新密码">
+      <input type="password" id="confirmPwd" placeholder="再次输入新密码">
+      <div class="modal-btns">
+        <button id="closeReset">取消</button>
+        <button id="submitReset">确认重置密码</button>
+      </div>
+    </div>
+  </div>
 <!-- 注册表单里面不要放忘记密码 -->
 <div id="registerForm">
     <div class="input-box">
@@ -1267,16 +1354,92 @@ function renderFilterList(keyword) {
 }
 searchInput.addEventListener("input", (e) => renderFilterList(e.target.value));
 // 忘记密码发送重置邮件
-resetPwdBtn.onclick = async () => {
-    clearAllTip();
-    const email = loginUser.value.trim();
-    if(!email) return showTip(loginTip, '请先输入你的注册邮箱');
+const forgotPwdBtn = document.getElementById('resetPwdBtn');
+const resetModal = document.getElementById('resetModal');
+const closeReset = document.getElementById('closeReset');
+const sendCodeBtn = document.getElementById('sendCodeBtn');
+const submitReset = document.getElementById('submitReset');
+
+// 打开重置弹窗
+forgotPwdBtn.onclick = () => {
+    resetModal.classList.add('show');
+};
+// 关闭弹窗
+closeReset.onclick = () => {
+    resetModal.classList.remove('show');
+};
+
+// 发送邮箱验证码
+sendCodeBtn.onclick = async () => {
+    const email = document.getElementById('resetEmail').value.trim();
+    if (!email) return alert('请先输入注册邮箱');
+    // 防止重复点击，双重锁定
+    if (sendCodeBtn.disabled) return;
+
+    sendCodeBtn.disabled = true;
+    let count = 60;
+    sendCodeBtn.innerText = `${count}s后重发`;
+    const timer = setInterval(() => {
+        count--;
+        sendCodeBtn.innerText = `${count}s后重发`;
+        if (count <= 0) {
+            clearInterval(timer);
+            sendCodeBtn.disabled = false;
+            sendCodeBtn.innerText = '发送验证码';
+        }
+    }, 1000);
+
     const { error } = await client.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + window.location.pathname
+  redirectTo: ""
+});
+    if (error) {
+        clearInterval(timer);
+        sendCodeBtn.disabled = false;
+        sendCodeBtn.innerText = '发送验证码';
+        // 区分限流错误和其他错误
+        if (error.message.includes('rate limit exceeded')) {
+            alert('发送过于频繁，请等待10分钟后重试！');
+        } else {
+            alert('验证码发送失败：' + error.message);
+        }
+    } else {
+        clearAllTip();
+        showTip(loginTip, '6位验证码已发送至你的邮箱，请查收');
+    }
+};
+
+// 提交重置密码
+submitReset.onclick = async () => {
+    const email = document.getElementById('resetEmail').value.trim();
+    const code = document.getElementById('resetCode').value.trim();
+    const newPwd = document.getElementById('newPwd').value.trim();
+    const confirmPwd = document.getElementById('confirmPwd').value.trim();
+
+    if (!email || !code || !newPwd) return alert('请填写完整邮箱、验证码、新密码');
+    if (code.length !== 6) return alert('验证码必须是6位数字');
+    if (newPwd !== confirmPwd) return alert('两次输入的新密码不一致');
+    if (newPwd.length < 6) return alert('密码至少6位字符');
+
+    // 这里把supabase改为client
+    const { data, error } = await client.auth.verifyOtp({
+        email: email,
+        token: code,
+        type: 'recovery',
+        newPassword: newPwd
     });
-    if(error) return showTip(loginTip, error.message);
-    showTip(loginTip, '重置链接已发送至邮箱，有效期24小时');
-}
+    if (error) {
+        alert('重置失败：' + error.message);
+        return;
+    }
+    clearAllTip();
+    showTip(loginTip, '密码重置成功！请使用新密码登录');
+    resetModal.classList.remove('show');
+    // 清空输入框
+    document.getElementById('resetEmail').value = '';
+    document.getElementById('resetCode').value = '';
+    document.getElementById('newPwd').value = '';
+    document.getElementById('confirmPwd').value = '';
+};
 </script>
 </body>
 </html>
