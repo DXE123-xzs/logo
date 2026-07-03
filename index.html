@@ -202,7 +202,7 @@
     content: "";
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.65);
+    background: rgba(0, 0, 0, 0.82);
     z-index: -1;
 }
 
@@ -660,6 +660,33 @@
     letter-spacing: 1px;
     opacity: 0.75;
 }
+.record-disc {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: radial-gradient(#222 62%, #111 64%, #000 66%);
+    position: relative;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    animation: recordRotate 10s linear infinite paused;
+}
+.record-disc.playing {
+    animation-play-state: running;
+}
+.record-inner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #aaa;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+@keyframes recordRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
 </style>
 </head>
 <body>
@@ -681,29 +708,35 @@
                 <button class="tab-btn" id="regTab">注册账号</button>
             </div>
             <div id="loginForm">
-                <div class="input-box">
-                    <input type="email" id="loginUser" placeholder="输入注册邮箱" autocomplete="off">
-                </div>
-                <div class="input-box">
-                    <input type="password" id="loginPwd" placeholder="输入登录密码" autocomplete="new-password">
-                </div>
-                <button class="submit-btn" id="loginBtn">登录进入素材库</button>
-                <div class="form-tip" id="loginTip"></div>
-            </div>
-            <div id="registerForm">
-                <div class="input-box">
-                    <input type="email" id="regUser" placeholder="填写邮箱作为账号" autocomplete="off">
-                </div>
-                <div class="input-box">
-                    <input type="password" id="regPwd" placeholder="设置登录密码（至少6位）" autocomplete="new-password">
-                </div>
-                <div class="input-box">
-                    <input type="password" id="regPwd2" placeholder="再次输入密码确认" autocomplete="new-password">
-                </div>
-                <button class="submit-btn" id="regBtn">完成注册</button>
-                <div class="form-tip" id="regTip"></div>
-                <div class="tips-desc">注册后即可登录查看全部素材</div>
-            </div>
+    <div class="input-box">
+        <input type="email" id="loginUser" placeholder="输入注册邮箱" autocomplete="off">
+    </div>
+    <div class="input-box">
+        <input type="password" id="loginPwd" placeholder="输入登录密码" autocomplete="new-password">
+    </div>
+    <!-- 忘记密码只放在登录表单里面 -->
+    <div style="text-align:right;margin:8px 0;">
+        <span id="resetPwdBtn" style="color:#00e5ff;cursor:pointer;font-size:14px;">忘记密码？</span>
+    </div>
+    <button class="submit-btn" id="loginBtn">登录进入素材库</button>
+    <div class="form-tip" id="loginTip"></div>
+</div>
+
+<!-- 注册表单里面不要放忘记密码 -->
+<div id="registerForm">
+    <div class="input-box">
+        <input type="email" id="regUser" placeholder="填写邮箱作为账号" autocomplete="off">
+    </div>
+    <div class="input-box">
+        <input type="password" id="regPwd" placeholder="设置登录密码（至少6位）" autocomplete="new-password">
+    </div>
+    <div class="input-box">
+        <input type="password" id="regPwd2" placeholder="再次输入密码确认" autocomplete="new-password">
+    </div>
+    <button class="submit-btn" id="regBtn">完成注册</button>
+    <div class="form-tip" id="regTip"></div>
+    <div class="tips-desc">注册后即可登录查看全部素材</div>
+</div>
         </div>
     </div>
 </div>
@@ -744,20 +777,24 @@
             <span id="weatherText">加载天气...</span>
         </div>
         <div class="music-box">
-            <div class="music-top">
-                <button class="play-btn" id="playBtn">▶</button>
-                <div class="play-progress" id="progressWrap">
-                    <div class="progress-inner" id="progressBar"></div>
-                </div>
-                <input type="range" class="volume-slider" id="volumeCtrl" min="0" max="1" step="0.05" value="0.5">
-            </div>
-            <div class="music-time">
-                <span id="currentTime">00:00</span>
-                <span id="totalTime">00:00</span>
-            </div>
+    <div class="music-top">
+        <!-- 替换原来的button唱片播放按钮，id保留playBtn不变 -->
+        <div class="record-disc" id="playBtn">
+            <div class="record-inner"></div>
         </div>
-        <audio id="audioPlayer" loop volume="0.5" crossorigin="anonymous">
-            <source src="https://cdn.jsdelivr.net/gh/DXE123-xzs/logo@main/出现又离开.mp3" type="audio/mpeg">
+        <div class="play-progress" id="progressWrap">
+            <div class="progress-inner" id="progressBar"></div>
+        </div>
+        <input type="range" class="volume-slider" id="volumeCtrl" min="0" max="1" step="0.05" value="0.5">
+    </div>
+    <div class="music-time">
+        <span id="currentTime">00:00</span>
+        <span id="totalTime">00:00</span>
+    </div>
+</div>
+<audio id="audioPlayer" loop volume="0.5" crossorigin="anonymous">
+    <source src="https://cdn.jsdelivr.net/gh/DXE123-xzs/logo@main/出现又离开.mp3" type="audio/mpeg">
+
         
     </div>
 
@@ -855,6 +892,7 @@ const progressBar = document.getElementById("progressBar");
 const volumeCtrl = document.getElementById("volumeCtrl");
 const currentTimeEl = document.getElementById("currentTime");
 const totalTimeEl = document.getElementById("totalTime");
+const resetPwdBtn = document.getElementById('resetPwdBtn');
 
 mask.onclick = () => mask.style.display = "none";
 
@@ -899,13 +937,22 @@ regBtn.onclick = async () => {
     const email = regUser.value.trim();
     const pwd = regPwd.value.trim();
     const pwd2 = regPwd2.value.trim();
+
+    // 邮箱格式校验放最前面
+    const emailReg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+    if (!emailReg.test(email)) {
+        return showTip(regTip, '请填写规范有效的邮箱地址');
+    }
+
     if(!email || !pwd) return showTip(regTip, '邮箱和密码不能为空！');
     if(pwd.length < 6) return showTip(regTip, '密码至少6位字符！');
     if(pwd !== pwd2) return showTip(regTip, '两次输入的密码不一致！');
     const { data, error } = await client.auth.signUp({email, password: pwd});
     if(error) return showTip(regTip, error.message);
-    showTip(regTip, '注册成功！切换登录页面登录');
-    setTimeout(()=>{
+    showTip(regTip, '注册成功！请先去邮箱完成验证再登录');
+    setTimeout(async ()=>{
+        // 新增：注册后强制退出，禁止自动登录
+        await client.auth.signOut();
         loginTab.click();
         regUser.value = regPwd.value = regPwd2.value = '';
     },1500);
@@ -942,23 +989,32 @@ closeDelModal.onclick = () => {
     delPwd.value = '';
 }
 
-// 注销账号（免费版无admin权限，仅登出）
+// 替换原来confirmDel点击事件里的逻辑
 confirmDel.onclick = async () => {
     clearAllTip();
     const email = delName.value.trim();
     const pwd = delPwd.value.trim();
     if(!email || !pwd) return showTip(delTip, '邮箱和密码不能为空！');
+    // 先登录校验身份
     const { data: authData, error: authErr } = await client.auth.signInWithPassword({email, password:pwd});
     if(authErr) return showTip(delTip, '账号或密码不匹配');
-    showTip(delTip, '免费版前端无法删除账号，请后台手动注销');
-    setTimeout(async ()=>{
-        delModal.classList.remove('show');
-        delName.value = '';
-        delPwd.value = '';
-        await client.auth.signOut();
-        loginPage.style.display = 'flex';
-        mainSite.classList.remove('unlock');
-    },1500);
+    const userId = authData.user.id;
+    try {
+        // 调用自定义函数删除当前用户
+        const { error: delErr } = await client.rpc('delete_user', { target_user_id: userId });
+        if(delErr) throw delErr;
+        showTip(delTip, '账号已永久注销，页面即将跳转');
+        setTimeout(async ()=>{
+            delModal.classList.remove('show');
+            delName.value = '';
+            delPwd.value = '';
+            await client.auth.signOut();
+            loginPage.style.display = 'flex';
+            mainSite.classList.remove('unlock');
+        },1500);
+    } catch(err) {
+        showTip(delTip, '注销失败：'+err.message);
+    }
 }
 
 // 页面加载校验登录状态
@@ -1018,19 +1074,30 @@ function setDefaultWeather() {
 async function getWeather() {
     setDefaultWeather();
     try {
-        const res = await safeFetch("https://www.weatherapi.com/api-explorer.aspx/v1/current.json?key=demo&q=jinan&aqi=no");
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        const wText = data.current.condition.text;
-        const temp = data.current.temp_c;
+        // 1. 先通过IP自动获取用户所在城市
+        const ipRes = await safeFetch('https://api.ip.sb/geoip');
+        const ipData = await ipRes.json();
+        const userCity = ipData.city || ipData.region || "济南";
+        
+        // 2. 免费国内天气接口，替换失效的weatherapi
+        const weatherRes = await safeFetch(`https://api.imqd.cn/jdwx/weather.php?city=${encodeURIComponent(userCity)}`);
+        const weatherData = await weatherRes.json();
+        const info = weatherData.list[0];
+        
+        const wText = info.weather;
+        const temp = info.temp;
+
         weatherIcon.textContent = weatherEmojiMap[wText] || "⛅";
-        weatherText.textContent = `济南 ${wText} ${temp}℃`;
+        weatherText.textContent = `${userCity} ${wText} ${temp}℃`;
     } catch(err) {
-        console.log('天气接口加载失败');
+        console.log('天气接口加载失败', err);
+        // 网络/接口异常，保留默认济南
+        setDefaultWeather();
     }
 }
 getWeather();
-setInterval(getWeather, 3600000);
+// 6小时刷新一次天气
+setInterval(getWeather, 3600000 * 6);
 
 // 音乐播放器
 function formatSec(sec) {
@@ -1041,13 +1108,16 @@ function formatSec(sec) {
 playBtn.onclick = () => {
     if(audioPlayer.paused) {
         audioPlayer.play();
-        playBtn.textContent = "⏸";
+        playBtn.classList.add('playing');
     } else {
         audioPlayer.pause();
-        playBtn.textContent = "▶";
+        playBtn.classList.remove('playing');
     }
-}
-volumeCtrl.oninput = () => audioPlayer.volume = volumeCtrl.value / 100;
+};
+// 音频自动播放/暂停同步旋转状态
+audioPlayer.addEventListener('play', ()=> playBtn.classList.add('playing'));
+audioPlayer.addEventListener('pause', ()=> playBtn.classList.remove('playing'));
+volumeCtrl.oninput = () => audioPlayer.volume = volumeCtrl.value;
 audioPlayer.addEventListener('loadedmetadata', () => totalTimeEl.textContent = formatSec(audioPlayer.duration));
 audioPlayer.addEventListener('timeupdate', () => {
     const per = (audioPlayer.currentTime / audioPlayer.duration) * 100;
@@ -1196,6 +1266,17 @@ function renderFilterList(keyword) {
     }
 }
 searchInput.addEventListener("input", (e) => renderFilterList(e.target.value));
+// 忘记密码发送重置邮件
+resetPwdBtn.onclick = async () => {
+    clearAllTip();
+    const email = loginUser.value.trim();
+    if(!email) return showTip(loginTip, '请先输入你的注册邮箱');
+    const { error } = await client.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname
+    });
+    if(error) return showTip(loginTip, error.message);
+    showTip(loginTip, '重置链接已发送至邮箱，有效期24小时');
+}
 </script>
 </body>
 </html>
