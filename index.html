@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>企业标志素材库 | 登录</title>
-<!-- 修复CSP：允许内联事件脚本，否则按钮点击失效 -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://cdn.jsdelivr.net https://picsum.photos data:; media-src 'self' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.github.com https://www.weatherapi.com;">
+<!-- Supabase SDK 仅引入一次 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- CSP适配本地调试 -->
 <style>
 * {
     margin: 0;
@@ -681,7 +682,7 @@
             </div>
             <div id="loginForm">
                 <div class="input-box">
-                    <input type="text" id="loginUser" placeholder="输入你的账号" autocomplete="off">
+                    <input type="email" id="loginUser" placeholder="输入注册邮箱" autocomplete="off">
                 </div>
                 <div class="input-box">
                     <input type="password" id="loginPwd" placeholder="输入登录密码" autocomplete="new-password">
@@ -691,10 +692,10 @@
             </div>
             <div id="registerForm">
                 <div class="input-box">
-                    <input type="text" id="regUser" placeholder="自定义账号名称" autocomplete="off">
+                    <input type="email" id="regUser" placeholder="填写邮箱作为账号" autocomplete="off">
                 </div>
                 <div class="input-box">
-                    <input type="password" id="regPwd" placeholder="设置登录密码" autocomplete="new-password">
+                    <input type="password" id="regPwd" placeholder="设置登录密码（至少6位）" autocomplete="new-password">
                 </div>
                 <div class="input-box">
                     <input type="password" id="regPwd2" placeholder="再次输入密码确认" autocomplete="new-password">
@@ -717,7 +718,7 @@
         <div class="del-box">
             <h3>永久注销账号</h3>
             <div class="input-box">
-                <input type="text" id="delName" placeholder="输入要注销的账号" autocomplete="off">
+                <input type="email" id="delName" placeholder="输入注册邮箱" autocomplete="off">
             </div>
             <div class="input-box">
                 <input type="password" id="delPwd" placeholder="输入该账号密码" autocomplete="new-password">
@@ -737,7 +738,7 @@
 
     <div class="time-weather-panel" id="weatherPanel">
         <div class="time-text" id="timeBox">00:00</div>
-        <div class="date-text" id="dateBox">2026年07月01日 星期三</div>
+        <div class="date-text" id="dateBox">2026年07月03日 星期五</div>
         <div class="weather-row">
             <span class="weather-icon" id="weatherIcon">🌤️</span>
             <span id="weatherText">加载天气...</span>
@@ -771,8 +772,12 @@
 </div>
 
 <script>
-// ===================== 安全核心工具函数 =====================
-// XSS HTML转义，所有动态渲染内容必须调用
+// Supabase 全局初始化（仅一次，不再重复定义）
+const SUPABASE_URL = "https://wrgdztsnhgjqhshalxhz.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_5-a2JCOT07BwSpe60KBx8A_Sbv78gVH";
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// XSS HTML转义工具
 function escapeHtml(str) {
     if (!str) return "";
     return String(str)
@@ -783,27 +788,7 @@ function escapeHtml(str) {
         .replace(/'/g, "&#039;")
         .replace(/`/g, "&#96;");
 }
-// 简易不可逆SHA256密码哈希（前端单向加密，无法解密）
-async function hashPassword(rawPwd) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(rawPwd + "logoSalt2026"); // 加盐增加破解难度
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-}
-// 本地存储安全解析，过滤损坏/非法数据
-function safeParseStorage(jsonStr) {
-    try {
-        const data = JSON.parse(jsonStr);
-        return Array.isArray(data) ? data.filter(item => item?.username && item?.pwdHash) : [];
-    } catch (e) {
-        console.warn("本地账号数据损坏，已清空");
-        localStorage.removeItem('staffAccountList');
-        localStorage.removeItem('loginSession');
-        return [];
-    }
-}
-// 安全跨域fetch
+// 安全跨域请求
 function safeFetch(url, opt={}) {
     return fetch(url, {
         ...opt,
@@ -812,37 +797,12 @@ function safeFetch(url, opt={}) {
         referrerPolicy:"strict-origin-when-cross-origin"
     })
 }
-// 登录会话工具（30分钟过期，刷新/关页面失效）
-const SESSION_KEY = "loginSession";
-function setLoginSession(username) {
-    const expire = Date.now() + 30 * 60 * 1000; // 30分钟
-    localStorage.setItem(SESSION_KEY, JSON.stringify({user: username, expire}));
-}
-function checkLoginSession() {
-    const sessStr = localStorage.getItem(SESSION_KEY);
-    if(!sessStr) return null;
-    try{
-        const sess = JSON.parse(sessStr);
-        if(Date.now() > sess.expire) {
-            localStorage.removeItem(SESSION_KEY);
-            return null;
-        }
-        return sess.user;
-    }catch{
-        localStorage.removeItem(SESSION_KEY);
-        return null;
-    }
-}
-function clearLoginSession() {
-    localStorage.removeItem(SESSION_KEY);
-}
-// ==========================================================
-
+// GitHub公共素材仓库配置
 const OWNER = "DXE123-xzs";
 const REPO = "logo";
 const BRANCH = "main";
 
-// 随机视频 + 加载失败兜底
+// 随机登录页背景视频
 const videoList = [
     `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/video/1.mp4`,
     `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/video/2.mp4`,
@@ -851,19 +811,14 @@ const videoList = [
 const bgVideo = document.getElementById('bgVideo');
 const randomVideo = videoList[Math.floor(Math.random() * videoList.length)];
 bgVideo.innerHTML = `<source src="${escapeHtml(randomVideo)}" type="video/mp4">`;
-// 视频加载失败兜底
-bgVideo.onerror = () => {
-    bgVideo.style.display = "none";
-}
+bgVideo.onerror = () => bgVideo.style.display = "none";
 bgVideo.load();
 
-// DOM元素
+// DOM节点缓存
 const loginPage = document.getElementById('loginPage');
 const mainSite = document.getElementById('mainSite');
 const logoutBtn = document.getElementById('logoutBtn');
 const topBtnWrap = document.getElementById('topBtnWrap');
-
-// 注销弹窗
 const delModal = document.getElementById('delModal');
 const openDelModal = document.getElementById('openDelModal');
 const closeDelModal = document.getElementById('closeDelModal');
@@ -871,12 +826,8 @@ const confirmDel = document.getElementById('confirmDel');
 const delName = document.getElementById('delName');
 const delPwd = document.getElementById('delPwd');
 const delTip = document.getElementById('delTip');
-
-// 提示框
 const loginTip = document.getElementById('loginTip');
 const regTip = document.getElementById('regTip');
-
-// 登录注册标签
 const loginTab = document.getElementById('loginTab');
 const regTab = document.getElementById('regTab');
 const loginForm = document.getElementById('loginForm');
@@ -888,8 +839,6 @@ const regUser = document.getElementById('regUser');
 const regPwd = document.getElementById('regPwd');
 const regPwd2 = document.getElementById('regPwd2');
 const regBtn = document.getElementById('regBtn');
-
-// 素材页面DOM
 const mask = document.getElementById("mask");
 const bigImg = document.getElementById("bigImg");
 const scrollBox = document.getElementById("scrollBox");
@@ -909,16 +858,7 @@ const totalTimeEl = document.getElementById("totalTime");
 
 mask.onclick = () => mask.style.display = "none";
 
-// 账号存储（仅存储哈希密码，不存明文）
-function getStaffAccounts() {
-    const data = localStorage.getItem('staffAccountList');
-    return safeParseStorage(data);
-}
-function saveStaffAccounts(list) {
-    localStorage.setItem('staffAccountList', JSON.stringify(list));
-}
-
-// 提示工具
+// 提示弹窗工具
 function showTip(el, text) {
     el.textContent = escapeHtml(text);
     el.classList.add('show');
@@ -930,7 +870,7 @@ function clearAllTip() {
     delTip.classList.remove('show');
 }
 
-// 切换表单
+// 切换登录/注册表单
 loginTab.onclick = () => {
     clearAllTip();
     loginTab.classList.add('active');
@@ -946,57 +886,52 @@ regTab.onclick = () => {
     loginForm.style.display = 'none';
 }
 
-// 注册逻辑（密码加密存储）
+// 登录成功进入主页面
+function enterMainPage() {
+    loginPage.style.display = 'none';
+    mainSite.classList.add('unlock');
+    refreshLogoList();
+}
+
+// 注册逻辑
 regBtn.onclick = async () => {
     clearAllTip();
-    const u = regUser.value.trim();
-    const p = regPwd.value.trim();
-    const p2 = regPwd2.value.trim();
-    if(!u || !p) return showTip(regTip, '账号和密码不能为空！');
-    if(p !== p2) return showTip(regTip, '两次输入的密码不一致！');
-    const accountList = getStaffAccounts();
-    if(accountList.find(item => item.username === u)) return showTip(regTip, '该账号已注册，请直接登录');
-    // 密码哈希，仅存密文
-    const pwdHash = await hashPassword(p);
-    accountList.push({username: u, pwdHash});
-    saveStaffAccounts(accountList);
-    showTip(regTip, '注册成功！请切换到登录页面登录');
+    const email = regUser.value.trim();
+    const pwd = regPwd.value.trim();
+    const pwd2 = regPwd2.value.trim();
+    if(!email || !pwd) return showTip(regTip, '邮箱和密码不能为空！');
+    if(pwd.length < 6) return showTip(regTip, '密码至少6位字符！');
+    if(pwd !== pwd2) return showTip(regTip, '两次输入的密码不一致！');
+    const { data, error } = await client.auth.signUp({email, password: pwd});
+    if(error) return showTip(regTip, error.message);
+    showTip(regTip, '注册成功！切换登录页面登录');
     setTimeout(()=>{
         loginTab.click();
         regUser.value = regPwd.value = regPwd2.value = '';
     },1500);
 }
 
-// 登录校验（比对哈希，不读取明文密码）
-function enterMainPage(user) {
-    setLoginSession(user);
-    loginPage.style.display = 'none';
-    mainSite.classList.add('unlock');
-    refreshLogoList();
-}
+// 登录逻辑
 loginBtn.onclick = async () => {
     clearAllTip();
-    const u = loginUser.value.trim();
-    const p = loginPwd.value.trim();
-    if(!u || !p) return showTip(loginTip, '账号和密码不能为空！');
-    const list = getStaffAccounts();
-    const targetHash = await hashPassword(p);
-    const match = list.find(item => item.username === u && item.pwdHash === targetHash);
-    if(match) {
-        enterMainPage(u);
-    } else {
-        showTip(loginTip, '账号或密码错误，请核对后重试');
+    const email = loginUser.value.trim();
+    const pwd = loginPwd.value.trim();
+    if(!email || !pwd) return showTip(loginTip, '邮箱和密码不能为空！');
+    const { data, error } = await client.auth.signInWithPassword({email, password: pwd});
+    if(error) return showTip(loginTip, error.message);
+    enterMainPage();
+}
+
+// 退出登录
+logoutBtn.onclick = async () => {
+    const { error } = await client.auth.signOut();
+    if(!error) {
+        loginPage.style.display = 'flex';
+        mainSite.classList.remove('unlock');
     }
 }
 
-// 退出登录，清空会话
-logoutBtn.onclick = () => {
-    clearLoginSession();
-    loginPage.style.display = 'flex';
-    mainSite.classList.remove('unlock');
-}
-
-// 注销弹窗
+// 注销账号弹窗控制
 openDelModal.onclick = () => {
     clearAllTip();
     delModal.classList.add('show');
@@ -1007,38 +942,41 @@ closeDelModal.onclick = () => {
     delPwd.value = '';
 }
 
-// 注销账号（哈希校验后删除）
+// 注销账号（免费版无admin权限，仅登出）
 confirmDel.onclick = async () => {
     clearAllTip();
-    const delUser = delName.value.trim();
-    const delPass = delPwd.value.trim();
-    if(!delUser || !delPass) return showTip(delTip, '账号和密码不能为空！');
-    let accountArr = getStaffAccounts();
-    const targetHash = await hashPassword(delPass);
-    const targetIndex = accountArr.findIndex(item => item.username === delUser && item.pwdHash === targetHash);
-    if(targetIndex === -1) return showTip(delTip, '账号或密码不匹配，无法注销');
-    accountArr.splice(targetIndex, 1);
-    saveStaffAccounts(accountArr);
-    showTip(delTip, '账号已永久注销，弹窗1.5秒关闭');
-    setTimeout(()=>{
+    const email = delName.value.trim();
+    const pwd = delPwd.value.trim();
+    if(!email || !pwd) return showTip(delTip, '邮箱和密码不能为空！');
+    const { data: authData, error: authErr } = await client.auth.signInWithPassword({email, password:pwd});
+    if(authErr) return showTip(delTip, '账号或密码不匹配');
+    showTip(delTip, '免费版前端无法删除账号，请后台手动注销');
+    setTimeout(async ()=>{
         delModal.classList.remove('show');
         delName.value = '';
         delPwd.value = '';
+        await client.auth.signOut();
+        loginPage.style.display = 'flex';
+        mainSite.classList.remove('unlock');
     },1500);
 }
 
-// 页面加载校验登录会话，过期强制登出
-window.onload = () => {
-    const loginUser = checkLoginSession();
-    if(loginUser) {
-        enterMainPage(loginUser);
-    }else{
-        clearLoginSession();
-        loginPage.style.display = 'flex';
-    }
+// 页面加载校验登录状态
+window.onload = async () => {
+    const { data: { session } } = await client.auth.getSession();
+    if(session) enterMainPage();
+    else loginPage.style.display = 'flex';
+    // 监听登录状态变化
+    client.auth.onAuthStateChange((event, session) => {
+        if(session) enterMainPage();
+        else {
+            loginPage.style.display = 'flex';
+            mainSite.classList.remove('unlock');
+        }
+    })
 };
 
-// 滚动控制面板显示
+// 滚动隐藏顶部面板
 let lastScrollY = 0;
 window.addEventListener('scroll', () => {
     const currentY = window.scrollY;
@@ -1068,7 +1006,7 @@ function updateDateTime() {
 updateDateTime();
 setInterval(updateDateTime, 1000);
 
-// 天气
+// 天气模块
 const weatherEmojiMap = {
     "晴":"☀️", "多云":"⛅", "阴":"☁️", "小雨":"🌧️", "中雨":"🌧️", "大雨":"🌧️",
     "雷阵雨":"⛈️", "小雪":"❄️", "大雪":"❄️", "雾":"🌫️", "霾":"🌫️"
@@ -1086,9 +1024,9 @@ async function getWeather() {
         const wText = data.current.condition.text;
         const temp = data.current.temp_c;
         weatherIcon.textContent = weatherEmojiMap[wText] || "⛅";
-        weatherText.textContent = `${escapeHtml(wText)} ${temp}℃`;
+        weatherText.textContent = `济南 ${wText} ${temp}℃`;
     } catch(err) {
-        console.log('天气接口加载失败，使用默认天气');
+        console.log('天气接口加载失败');
     }
 }
 getWeather();
@@ -1109,7 +1047,7 @@ playBtn.onclick = () => {
         playBtn.textContent = "▶";
     }
 }
-volumeCtrl.oninput = () => audioPlayer.volume = volumeCtrl.value;
+volumeCtrl.oninput = () => audioPlayer.volume = volumeCtrl.value / 100;
 audioPlayer.addEventListener('loadedmetadata', () => totalTimeEl.textContent = formatSec(audioPlayer.duration));
 audioPlayer.addEventListener('timeupdate', () => {
     const per = (audioPlayer.currentTime / audioPlayer.duration) * 100;
@@ -1123,7 +1061,7 @@ progressWrap.onclick = (e) => {
     audioPlayer.currentTime = audioPlayer.duration * rate;
 }
 
-// 背景轮播
+// 页面背景轮播
 const bgList = [
     "https://picsum.photos/id/1036/1920/1080",
     "https://picsum.photos/id/1018/1920/1080",
@@ -1132,7 +1070,7 @@ const bgList = [
     "https://picsum.photos/id/1039/1920/1080",
     "https://picsum.photos/id/1041/1920/1080",
     "https://picsum.photos/id/1044/1920/1080",
-    "https://picsum.photos/id/1046/1080"
+    "https://picsum.photos/id/1046/1920/1080"
 ];
 let bgIndex = 0;
 const preloadImgs = [];
@@ -1147,7 +1085,7 @@ setInterval(() => {
     document.querySelector('.main-site').style.background = `url(${safeBg}) center/cover no-repeat fixed`;
 }, 30000);
 
-let allImageList = [];
+// 素材下载
 async function downloadImage(url, fileName) {
     try {
         const res = await safeFetch(url);
@@ -1162,17 +1100,24 @@ async function downloadImage(url, fileName) {
         window.open(url, "_blank");
     }
 }
+
+// 加载GitHub公共素材列表
+let allImageList = [];
 async function refreshLogoList() {
-    const res = await safeFetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/images?ref=${BRANCH}`);
-    const fileList = await res.json();
-    scrollBox.innerHTML = "";
-    if (!Array.isArray(fileList)) return;
-    allImageList = fileList.filter(file => /\.(png|jpg|jpeg|svg|ico)$/i.test(file.name));
-    renderFilterList("");
+    try {
+        const res = await safeFetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/images?ref=${BRANCH}`);
+        const fileList = await res.json();
+        scrollBox.innerHTML = "";
+        if (!Array.isArray(fileList)) return;
+        allImageList = fileList.filter(file => /\.(png|jpg|jpeg|svg|ico)$/i.test(file.name));
+        renderFilterList("");
+    } catch(err) {
+        scrollBox.innerHTML = `<div class="empty-tip">素材加载失败，请刷新页面</div>`;
+    }
 }
 function renderFilterList(keyword) {
     scrollBox.innerHTML = "";
-    const safeKeyword = escapeHtml(keyword.toLowerCase());
+    const safeKeyword = escapeHtml(keyword).toLowerCase();
     const filterList = allImageList.filter(item => escapeHtml(item.name).toLowerCase().includes(safeKeyword));
     if (filterList.length === 0) {
         scrollBox.innerHTML = `<div class="empty-tip">未匹配到相关标志素材，请更换关键词搜索</div>`;
@@ -1182,41 +1127,33 @@ function renderFilterList(keyword) {
     const totalRow = Math.ceil(filterList.length / rowSize);
     for (let r = 0; r < totalRow; r++) {
         const rowData = filterList.slice(r * rowSize, (r + 1) * rowSize);
-        const listDouble = [...rowData, ...rowData];
-        const rowClass = r % 2 === 0 ? "scroll-row row-left" : "scroll-row row-right";
         const rowWrap = document.createElement("div");
-        rowWrap.className = rowClass;
-        rowWrap.style.setProperty("--drag", "0px");
+        rowWrap.className = r % 2 === 0 ? "scroll-row row-left" : "scroll-row row-right";
         const inner = document.createElement("div");
         inner.className = "scroll-row-inner";
-        if (safeKeyword) inner.style.animation = "none";
-        listDouble.forEach(file => {
+        const doubleList = [...rowData, ...rowData];
+        doubleList.forEach(file => {
             const imgSrc = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/images/${escapeHtml(file.name)}`;
             const safeFileName = escapeHtml(file.name);
             const card = document.createElement("div");
             card.className = "logo-card";
-            // 所有文本、链接全部转义防XSS
             card.innerHTML = `
                 <img src="${imgSrc}" crossorigin="anonymous">
                 <div class="logo-name" title="${safeFileName}">${safeFileName}</div>
                 <div class="download-btn">下载原图</div>
             `;
-            let dragMoved = false;
-            let startX = 0;
-            let startY = 0;
+            let dragStartX = 0;
+            let dragMove = false;
             const dragThreshold = 5;
             card.onmousedown = (e) => {
-                dragMoved = false;
-                startX = e.clientX;
-                startY = e.clientY;
+                dragMove = false;
+                dragStartX = e.clientX;
             }
             card.onmousemove = (e) => {
-                const dx = Math.abs(e.clientX - startX);
-                const dy = Math.abs(e.clientY - startY);
-                if (dx > dragThreshold || dy > dragThreshold) dragMoved = true;
+                if (Math.abs(e.clientX - dragStartX) > dragThreshold) dragMove = true;
             }
             card.onmouseup = () => {
-                if (!dragMoved) {
+                if (!dragMove) {
                     bigImg.src = imgSrc;
                     mask.style.display = "flex";
                 }
@@ -1230,31 +1167,31 @@ function renderFilterList(keyword) {
         rowWrap.appendChild(inner);
         scrollBox.appendChild(rowWrap);
 
-        // 独立拖拽监听，多行不冲突
+        // 拖拽逻辑
         let dragState = {
             isDrag: false,
-            dragStartX: 0,
-            dragOffset: 0
+            startX: 0,
+            offsetX: 0
         };
-        function onMove(e) {
+        function onMouseMove(e) {
             if (!dragState.isDrag) return;
-            const diff = e.clientX - dragState.dragStartX;
-            dragState.dragOffset += diff;
-            dragState.dragStartX = e.clientX;
-            rowWrap.style.setProperty("--drag", dragState.dragOffset + "px");
+            const moveX = e.clientX - dragState.startX;
+            rowWrap.style.setProperty("--drag", moveX + dragState.offsetX + "px");
         }
-        function onUp() {
+        function onMouseUp() {
             dragState.isDrag = false;
             rowWrap.classList.remove("paused");
-            document.removeEventListener('mousemove', onMove);
-            document.removeEventListener('mouseup', onUp);
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
         }
         rowWrap.addEventListener('mousedown', (e) => {
             dragState.isDrag = true;
-            dragState.dragStartX = e.clientX;
+            dragState.startX = e.clientX;
+            const currentVal = getComputedStyle(rowWrap).getPropertyValue("--drag");
+            dragState.offsetX = parseFloat(currentVal) || 0;
             rowWrap.classList.add("paused");
-            document.addEventListener('mousemove', onMove);
-            document.addEventListener('mouseup', onUp);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
         });
     }
 }
