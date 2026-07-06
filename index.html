@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>企业标志素材库 | 登录</title>
@@ -1054,8 +1059,8 @@
         <span id="totalTime">00:00</span>
     </div>
 </div>
-<audio id="audioPlayer" loop volume="0.5" crossorigin="anonymous">
-    <source src="https://cdn.jsdelivr.net/gh/DXE123-xzs/logo@main/出现又离开.mp3" type="audio/mpeg">
+<audio id="audioPlayer" loop volume="0.5" muted preload="auto" crossorigin="anonymous">
+    <source src="https://dxe123-xzs.github.io/logo/出现又离开.mp3" type="audio/mpeg">
 
         
     </div>
@@ -1078,6 +1083,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_5-a2JCOT07BwSpe60KBx8A_Sbv78gVH";
 const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let isManualLogin = false;
 let isRegistering = false; // 新增注册锁
+let currentSearchKey = "";
 
 // 监听登录状态变化
 client.auth.onAuthStateChange((event, session) => {
@@ -1169,7 +1175,10 @@ const currentTimeEl = document.getElementById("currentTime");
 const totalTimeEl = document.getElementById("totalTime");
 const resetPwdBtn = document.getElementById('resetPwdBtn');
 
-mask.onclick = () => mask.style.display = "none";
+mask.onclick = () => {
+    mask.style.display = "none";
+    pauseAllScroll();
+};
 
 // 提示弹窗工具
 function showTip(el, text) {
@@ -1398,18 +1407,24 @@ function formatSec(sec) {
     const s = Math.floor(sec % 60).toString().padStart(2, "0");
     return m + ":" + s;
 }
-playBtn.onclick = () => {
-    if(audioPlayer.paused) {
-        audioPlayer.play();
-        playBtn.classList.add('playing');
-    } else {
-        audioPlayer.pause();
-        playBtn.classList.remove('playing');
+playBtn.onclick = async function() {
+    try {
+        audioPlayer.muted = false;
+        if (audioPlayer.paused) {
+            await audioPlayer.play();
+            playBtn.classList.add("playing");
+        } else {
+            audioPlayer.pause();
+            playBtn.classList.remove("playing");
+        }
+    } catch (err) {
+        console.error("播放失败：", err);
+        alert("网络无法加载音乐文件，切换手机热点刷新页面");
     }
 };
+
+
 // 音频自动播放/暂停同步旋转状态
-audioPlayer.addEventListener('play', ()=> playBtn.classList.add('playing'));
-audioPlayer.addEventListener('pause', ()=> playBtn.classList.remove('playing'));
 volumeCtrl.oninput = () => audioPlayer.volume = volumeCtrl.value;
 audioPlayer.addEventListener('loadedmetadata', () => totalTimeEl.textContent = formatSec(audioPlayer.duration));
 audioPlayer.addEventListener('timeupdate', () => {
@@ -1556,9 +1571,29 @@ function renderFilterList(keyword) {
             document.addEventListener('mousemove', onMouseMove);
             document.addEventListener('mouseup', onMouseUp);
         });
+
+        pauseAllScroll();
     }
 }
-searchInput.addEventListener("input", (e) => renderFilterList(e.target.value));
+
+// 统一控制所有滚动条暂停/播放
+function pauseAllScroll() {
+    const rows = document.querySelectorAll('.scroll-row');
+    rows.forEach(row => {
+        if (currentSearchKey !== "") {
+            row.classList.add('paused');
+        } else {
+            row.classList.remove('paused');
+        }
+    });
+}
+
+searchInput.addEventListener("input", (e) => {
+    currentSearchKey = e.target.value.trim();
+    renderFilterList(currentSearchKey);
+    pauseAllScroll();
+});
+
 // 忘记密码发送重置邮件
 const forgotPwdBtn = document.getElementById('resetPwdBtn');
 const resetModal = document.getElementById('resetModal');
@@ -1818,6 +1853,9 @@ async function initUserAvatar() {
   }
 }
 initUserAvatar();
+document.body.addEventListener('click', ()=>{
+    audioPlayer.muted = false;
+}, {once:true});
 </script>
 </body>
 </html>
