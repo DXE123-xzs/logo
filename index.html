@@ -661,27 +661,43 @@
     opacity: 0.75;
 }
 .record-disc {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: radial-gradient(#222 62%, #111 64%, #000 66%);
-    position: relative;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    animation: recordRotate 10s linear infinite paused;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #a82020 0deg 45deg,
+    #d45020 45deg 90deg,
+    #e89030 90deg 135deg,
+    #d45020 135deg 180deg,
+    #a82020 180deg 225deg,
+    #701010 225deg 270deg,
+    #500808 270deg 315deg,
+    #881818 315deg 360deg
+  );
+  background-image: repeating-radial-gradient(
+    circle,
+    transparent 0 2px,
+    rgba(180, 40, 40, 0.25) 2px 4px
+  );
+  position: relative;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(220, 80, 40, 0.4), inset 0 0 10px rgba(255,255,255,0.15);
+  animation: recordRotate 10s linear infinite paused;
+  pointer-events: auto;
 }
 .record-disc.playing {
-    animation-play-state: running;
+  animation-play-state: running;
 }
 .record-inner {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #aaa;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.75);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 4px rgba(255,255,255,0.5);
 }
 @keyframes recordRotate {
     from { transform: rotate(0deg); }
@@ -758,9 +774,162 @@
     background: linear-gradient(90deg,#0cf,#83f);
     color: #000;
 }
+/* 右上角头像入口 */
+.user-avatar-wrap {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid #fff;
+  z-index: 999;
+}
+.user-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 个人中心弹窗遮罩 */
+.user-center-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+.user-center-modal.show {
+  display: flex;
+}
+.modal-inner {
+  width: 420px;
+  background: #1a1a2e;
+  padding: 30px;
+  border-radius: 12px;
+  color: #fff;
+}
+.avatar-upload-box {
+  text-align: center;
+  margin: 20px 0;
+}
+#previewAvatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #6688ff;
+  margin-bottom:10px;
+  cursor: pointer;
+}
+#avatarFileInput {
+  display: none;
+}
+.info-item {
+  margin:12px 0;
+}
+.info-item label {
+  display:block;
+  margin-bottom:4px;
+}
+.info-item input {
+  width:100%;
+  padding:8px;
+  border-radius:6px;
+  border:none;
+  outline:none;
+}
+.pwd-box {
+  margin:20px 0;
+  padding:15px;
+  border:1px solid #334;
+  border-radius:8px;
+}
+.pwd-box input {
+  width:100%;
+  margin:6px 0;
+  padding:8px;
+  border-radius:6px;
+  border:none;
+  outline:none;
+}
+.btn-group {
+  display:flex;
+  gap:10px;
+  margin-top:20px;
+}
+.btn-group button {
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+#saveUserInfo {
+  background:#4285f4;
+  color:#fff;
+}
+#logoutBtn {
+  background:#dd4444;
+  color:#fff;
+}
+#closeUserCenter {
+  background:#666;
+  color:#fff;
+}
+#updatePwdBtn {
+  width:100%;
+  padding:8px;
+  margin-top:8px;
+  background:#28a745;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
 </style>
 </head>
 <body>
+<!-- 个人中心弹窗 -->
+<div class="user-center-modal" id="userCenterModal">
+  <div class="modal-inner">
+    <h3>个人中心</h3>
+
+    <!-- 头像上传区域 -->
+    <div class="avatar-upload-box">
+      <img id="previewAvatar" alt="头像预览">
+      <input type="file" id="avatarFileInput" accept="image/png,image/jpg,image/jpeg">
+      <p>点击头像上传（仅jpg/png，≤2MB）</p>
+    </div>
+
+    <!-- 用户信息 -->
+    <div class="info-item">
+      <label>登录邮箱</label>
+      <input type="text" id="userEmail" readonly>
+    </div>
+    <div class="info-item">
+      <label>昵称</label>
+      <input type="text" id="userName" placeholder="自定义昵称">
+    </div>
+
+    <!-- 修改密码 -->
+    <div class="pwd-box">
+      <h4>修改登录密码</h4>
+      <input type="password" id="oldPwd" placeholder="原密码">
+      <input type="password" id="newPwdSelf" placeholder="新密码">
+      <input type="password" id="confirmNewPwdSelf" placeholder="确认新密码">
+      <button id="updatePwdBtn">确认修改密码</button>
+    </div>
+
+    <div class="btn-group">
+      <button id="saveUserInfo">保存信息</button>
+      <button id="logoutBtn">退出登录</button>
+      <button id="closeUserCenter">关闭</button>
+    </div>
+  </div>
+</div>
 <!-- 全屏强制登录遮罩，永远置顶 -->
 <div class="login-page" id="loginPage">
     <div class="login-left">
@@ -798,7 +967,7 @@
       <h3>邮箱验证码重置密码</h3>
       <input type="email" id="resetEmail" placeholder="请输入注册时的邮箱">
       <div class="code-row">
-        <input type="text" id="resetCode" placeholder="6位数字验证码" maxlength="6">
+        <input type="text" id="resetCode" placeholder="6-8位验证码" maxlength="8">
         <button id="sendCodeBtn">发送验证码</button>
       </div>
       <input type="password" id="newPwd" placeholder="设置新密码">
@@ -829,10 +998,16 @@
 </div>
 
 <div class="main-site" id="mainSite">
-    <div class="top-btn-group" id="topBtnWrap">
-        <button class="logout-btn" id="logoutBtn">退出登录</button>
-        <button class="del-account-btn" id="openDelModal">注销账号</button>
+    <div class="top-btn-group" id="topBtnWrap" style="display:flex;align-items:center;gap:12px;position:absolute;top:20px;right:20px;">
+  <!-- 头像+文字垂直组 -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;" id="userAvatarEntrance">
+    <div class="user-avatar-wrap">
+      <img class="user-avatar" id="topAvatar" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23888'/%3E%3C/svg%3E">
     </div>
+    <span style="color:#fff;font-size:12px;">个人中心</span>
+  </div>
+  <button class="del-account-btn" id="openDelModal">注销账号</button>
+</div>
 
     <div class="del-modal" id="delModal">
         <div class="del-box">
@@ -896,10 +1071,24 @@
 </div>
 
 <script>
+    let isSaving = false;
 // Supabase 全局初始化（仅一次，不再重复定义）
 const SUPABASE_URL = "https://wrgdztsnhgjqhshalxhz.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_5-a2JCOT07BwSpe60KBx8A_Sbv78gVH";
 const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let isManualLogin = false;
+let isRegistering = false; // 新增注册锁
+
+// 监听登录状态变化
+client.auth.onAuthStateChange((event, session) => {
+    // 双重拦截：正在注册 或者 不是手动登录，一律强制停登录页
+    if(isRegistering || !isManualLogin) {
+        loginPage.style.display = 'flex';
+        mainSite.classList.remove('unlock');
+    } else {
+        enterMainPage();
+    }
+});
 
 // XSS HTML转义工具
 function escapeHtml(str) {
@@ -941,7 +1130,6 @@ bgVideo.load();
 // DOM节点缓存
 const loginPage = document.getElementById('loginPage');
 const mainSite = document.getElementById('mainSite');
-const logoutBtn = document.getElementById('logoutBtn');
 const topBtnWrap = document.getElementById('topBtnWrap');
 const delModal = document.getElementById('delModal');
 const openDelModal = document.getElementById('openDelModal');
@@ -1020,30 +1208,48 @@ function enterMainPage() {
 
 // 注册逻辑
 regBtn.onclick = async () => {
-    clearAllTip();
-    const email = regUser.value.trim();
-    const pwd = regPwd.value.trim();
-    const pwd2 = regPwd2.value.trim();
+  clearAllTip();
+  const email = regUser.value.trim();
+  const pwd = regPwd.value.trim();
+  const pwd2 = regPwd2.value.trim();
 
-    // 邮箱格式校验放最前面
-    const emailReg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
-    if (!emailReg.test(email)) {
-        return showTip(regTip, '请填写规范有效的邮箱地址');
+  // 邮箱格式校验
+  const emailReg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+  if (!emailReg.test(email)) return showTip(regTip, '请填写规范有效的邮箱地址');
+  if (!email || !pwd) return showTip(regTip, '邮箱和密码不能为空！');
+  if (pwd.length < 6) return showTip(regTip, '密码至少6位字符');
+  if (pwd !== pwd2) return showTip(regTip, '两次输入的密码不一致！');
+
+  isRegistering = true; // 上锁：注册流程开启，屏蔽后台跳转
+
+  const { data, error } = await client.auth.signUp(
+    { email, password: pwd },
+    {
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: {},
+        createSession: false
+      }
     }
+  );
+  if (error) {
+    isRegistering = false; // 注册失败解锁
+    if (error.message.includes('already registered')) {
+      return showTip(regTip, '该邮箱账号已经注册，请直接去登录！');
+    }
+    return showTip(regTip, error.message);
+  }
 
-    if(!email || !pwd) return showTip(regTip, '邮箱和密码不能为空！');
-    if(pwd.length < 6) return showTip(regTip, '密码至少6位字符！');
-    if(pwd !== pwd2) return showTip(regTip, '两次输入的密码不一致！');
-    const { data, error } = await client.auth.signUp({email, password: pwd});
-    if(error) return showTip(regTip, error.message);
-    showTip(regTip, '注册成功！请先去邮箱完成验证再登录');
-    setTimeout(async ()=>{
-        // 新增：注册后强制退出，禁止自动登录
-        await client.auth.signOut();
-        loginTab.click();
-        regUser.value = regPwd.value = regPwd2.value = '';
-    },1500);
-}
+  // 注册成功，销毁临时会话
+  await client.auth.signOut();
+  showTip(regTip, '注册成功，请前往登录界面输入账号密码登录！');
+  loginTab.click();
+  regUser.value = '';
+  regPwd.value = '';
+  regPwd2.value = '';
+
+  isRegistering = false; // 全部流程走完再解锁
+};
 
 // 登录逻辑
 loginBtn.onclick = async () => {
@@ -1053,16 +1259,8 @@ loginBtn.onclick = async () => {
     if(!email || !pwd) return showTip(loginTip, '邮箱和密码不能为空！');
     const { data, error } = await client.auth.signInWithPassword({email, password: pwd});
     if(error) return showTip(loginTip, error.message);
+    isManualLogin = true;
     enterMainPage();
-}
-
-// 退出登录
-logoutBtn.onclick = async () => {
-    const { error } = await client.auth.signOut();
-    if(!error) {
-        loginPage.style.display = 'flex';
-        mainSite.classList.remove('unlock');
-    }
 }
 
 // 注销账号弹窗控制
@@ -1079,13 +1277,27 @@ closeDelModal.onclick = () => {
 // 替换原来confirmDel点击事件里的逻辑
 confirmDel.onclick = async () => {
     clearAllTip();
-    const email = delName.value.trim();
-    const pwd = delPwd.value.trim();
-    if(!email || !pwd) return showTip(delTip, '邮箱和密码不能为空！');
-    // 先登录校验身份
-    const { data: authData, error: authErr } = await client.auth.signInWithPassword({email, password:pwd});
+    const inputEmail = delName.value.trim();
+    const inputPwd = delPwd.value.trim();
+    if(!inputEmail || !inputPwd) return showTip(delTip, '邮箱和密码不能为空！');
+
+    // 获取当前正在登录的账号信息
+    const { data: userData } = await client.auth.getUser();
+    const currentLoginEmail = userData.user?.email;
+
+    // 校验：输入的邮箱必须和当前登录账号一致，禁止注销别人账号
+    if(currentLoginEmail !== inputEmail) {
+        return showTip(delTip, '只能注销当前登录的账号，无法操作其他邮箱！');
+    }
+
+    // 校验账号密码
+    const { data: authData, error: authErr } = await client.auth.signInWithPassword({
+        email: inputEmail,
+        password: inputPwd
+    });
     if(authErr) return showTip(delTip, '账号或密码不匹配');
     const userId = authData.user.id;
+
     try {
         // 调用自定义函数删除当前用户
         const { error: delErr } = await client.rpc('delete_user', { target_user_id: userId });
@@ -1098,6 +1310,7 @@ confirmDel.onclick = async () => {
             await client.auth.signOut();
             loginPage.style.display = 'flex';
             mainSite.classList.remove('unlock');
+            isManualLogin = false; // 重置登录标记
         },1500);
     } catch(err) {
         showTip(delTip, '注销失败：'+err.message);
@@ -1105,18 +1318,11 @@ confirmDel.onclick = async () => {
 }
 
 // 页面加载校验登录状态
-window.onload = async () => {
+    window.onload = async () => {
+    isRegistering = false;
     const { data: { session } } = await client.auth.getSession();
     if(session) enterMainPage();
     else loginPage.style.display = 'flex';
-    // 监听登录状态变化
-    client.auth.onAuthStateChange((event, session) => {
-        if(session) enterMainPage();
-        else {
-            loginPage.style.display = 'flex';
-            mainSite.classList.remove('unlock');
-        }
-    })
 };
 
 // 滚动隐藏顶部面板
@@ -1160,13 +1366,13 @@ function setDefaultWeather() {
 }
 async function getWeather() {
     setDefaultWeather();
+    // 注释全部fetch逻辑，不再请求失效接口
+    /*
     try {
-        // 1. 先通过IP自动获取用户所在城市
         const ipRes = await safeFetch('https://api.ip.sb/geoip');
         const ipData = await ipRes.json();
         const userCity = ipData.city || ipData.region || "济南";
         
-        // 2. 免费国内天气接口，替换失效的weatherapi
         const weatherRes = await safeFetch(`https://api.imqd.cn/jdwx/weather.php?city=${encodeURIComponent(userCity)}`);
         const weatherData = await weatherRes.json();
         const info = weatherData.list[0];
@@ -1178,9 +1384,9 @@ async function getWeather() {
         weatherText.textContent = `${userCity} ${wText} ${temp}℃`;
     } catch(err) {
         console.log('天气接口加载失败', err);
-        // 网络/接口异常，保留默认济南
         setDefaultWeather();
     }
+    */
 }
 getWeather();
 // 6小时刷新一次天气
@@ -1416,21 +1622,23 @@ submitReset.onclick = async () => {
     const confirmPwd = document.getElementById('confirmPwd').value.trim();
 
     if (!email || !code || !newPwd) return alert('请填写完整邮箱、验证码、新密码');
-    if (code.length !== 6) return alert('验证码必须是6位数字');
+    if (code.length < 6 || code.length > 8) return alert('验证码为6-8位字符');
     if (newPwd !== confirmPwd) return alert('两次输入的新密码不一致');
     if (newPwd.length < 6) return alert('密码至少6位字符');
 
-    // 这里把supabase改为client
-    const { data, error } = await client.auth.verifyOtp({
-        email: email,
+    const { data: otpData, error: otpErr } = await client.auth.verifyOtp({
+        email,
         token: code,
-        type: 'recovery',
-        newPassword: newPwd
+        type: 'recovery'
     });
-    if (error) {
-        alert('重置失败：' + error.message);
-        return;
-    }
+    if (otpErr) return alert('验证码错误或已过期：' + otpErr.message);
+
+    // 2. 校验通过后，更新密码
+    const { error: updateErr } = await client.auth.updateUser({
+        password: newPwd
+    });
+    if (updateErr) return alert('重置失败：' + updateErr.message);
+
     clearAllTip();
     showTip(loginTip, '密码重置成功！请使用新密码登录');
     resetModal.classList.remove('show');
@@ -1439,7 +1647,177 @@ submitReset.onclick = async () => {
     document.getElementById('resetCode').value = '';
     document.getElementById('newPwd').value = '';
     document.getElementById('confirmPwd').value = '';
+
+    await client.auth.signOut();
+    loginPage.style.display = 'flex';
+    mainSite.classList.remove('unlock');
+    // 切换到登录Tab
+    loginTab.click();
 };
+// DOM元素
+const userAvatarEntrance = document.getElementById('userAvatarEntrance');
+const userCenterModal = document.getElementById('userCenterModal');
+const closeUserCenter = document.getElementById('closeUserCenter');
+const previewAvatar = document.getElementById('previewAvatar');
+const topAvatar = document.getElementById('topAvatar');
+const avatarFileInput = document.getElementById('avatarFileInput');
+const userEmail = document.getElementById('userEmail');
+const userName = document.getElementById('userName');
+const saveUserInfo = document.getElementById('saveUserInfo');
+const logoutBtn = document.getElementById('logoutBtn');
+const oldPwd = document.getElementById('oldPwd');
+const newPwdSelf = document.getElementById('newPwdSelf');
+const confirmNewPwdSelf = document.getElementById('confirmNewPwdSelf');
+const updatePwdBtn = document.getElementById('updatePwdBtn');
+
+let currentUser = null;
+let avatarTempUrl = "";
+
+// 打开个人中心
+userAvatarEntrance.onclick = async () => {
+  const { data: { user } } = await client.auth.getUser();
+  if(!user) return alert("请先登录账号");
+  currentUser = user;
+  userEmail.value = user.email;
+  const meta = user.user_metadata || {};
+  userName.value = meta.name || "";
+  avatarTempUrl = meta.avatar_url || "";
+
+  const defaultSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23888'/%3E%3C/svg%3E";
+  if(avatarTempUrl){
+    const cache = "?t=" + Date.now();
+    previewAvatar.src = avatarTempUrl + cache;
+    topAvatar.src = avatarTempUrl + cache;
+  }else{
+    previewAvatar.src = defaultSvg;
+    topAvatar.src = defaultSvg;
+  }
+  userCenterModal.classList.add("show");
+};
+
+// 关闭弹窗
+closeUserCenter.onclick = () => {
+  userCenterModal.classList.remove("show");
+  oldPwd.value = "";
+  newPwdSelf.value = "";
+  confirmNewPwdSelf.value = "";
+};
+
+// 点击头像唤起文件选择
+previewAvatar.onclick = () => avatarFileInput.click();
+
+// 本地图片预览
+avatarFileInput.onchange = (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  if(!["image/jpeg","image/jpg","image/png"].includes(file.type)){
+    return alert("仅支持 JPG / PNG 图片");
+  }
+  if(file.size > 2 * 1024 * 1024){
+    return alert("图片不能超过2MB");
+  }
+  const reader = new FileReader();
+  reader.onload = ev => previewAvatar.src = ev.target.result;
+  reader.readAsDataURL(file);
+};
+
+// 保存昵称+上传头像（桶名已替换为 user-logo-upload）
+saveUserInfo.onclick = async () => {
+  if(isSaving || !currentUser) return;
+  isSaving = true;
+  saveUserInfo.disabled = true;
+
+  const name = userName.value.trim();
+  let newAvatarUrl = avatarTempUrl;
+  const file = avatarFileInput.files[0];
+
+  if(file){
+    const uid = currentUser.id;
+    const suffix = file.name.split('.').pop();
+    const newFileName = `${uid}_${Date.now()}.${suffix}`;
+    // 单层路径，不再嵌套uid文件夹
+    const filePath = newFileName;
+    const { error: uploadErr } = await client.storage.from("user-logo-upload").upload(filePath, file, {upsert:true});
+    if(uploadErr) {
+     saveUserInfo.disabled = false;
+     isSaving = false;
+     return alert("头像上传失败："+uploadErr.message);
+   }
+   const { data: { publicUrl } } = await client.storage.from("user-logo-upload").getPublicUrl(filePath);
+   newAvatarUrl = publicUrl;
+ }
+
+  const { error } = await client.auth.updateUser({
+    data: {
+      name: name,
+      avatar_url: newAvatarUrl
+    }
+  });
+
+  // 无论成功失败，解锁按钮
+  saveUserInfo.disabled = false;
+  isSaving = false;
+  if(error) return alert("保存失败："+error.message);
+
+  // 加时间戳强制刷新两处头像
+  const cacheParam = "?t=" + Date.now();
+  topAvatar.src = newAvatarUrl + cacheParam;
+  previewAvatar.src = newAvatarUrl + cacheParam;
+  avatarTempUrl = newAvatarUrl;
+  alert("个人信息保存成功！");
+};
+
+// 修改登录密码
+updatePwdBtn.onclick = async () => {
+  const old = oldPwd.value.trim();
+  const new1 = newPwdSelf.value.trim();
+  const new2 = confirmNewPwdSelf.value.trim();
+  if(!old || !new1 || !new2) return alert("请填写完整密码");
+  if(new1 !== new2) return alert("两次新密码不一致");
+  if(new1.length <6) return alert("密码至少6位");
+
+  // 校验原密码
+  const { error: loginErr } = await client.auth.signInWithPassword({
+    email: currentUser.email,
+    password: old
+  });
+  if(loginErr) return alert("原密码输入错误");
+
+  // 更新密码
+  const { error } = await client.auth.updateUser({ password: new1 });
+  if(error) return alert("密码修改失败："+error.message);
+  alert("密码修改成功，请重新登录");
+  userCenterModal.classList.remove("show");
+  await client.auth.signOut();
+  loginPage.style.display = 'flex';
+  mainSite.classList.remove('unlock');
+  loginTab.click();
+};
+
+// 退出登录
+logoutBtn.onclick = async () => {
+  await client.auth.signOut();
+  isManualLogin = false;
+  userCenterModal.classList.remove("show");
+  loginPage.style.display = 'flex';
+  mainSite.classList.remove('unlock');
+  loginTab.click();
+};
+
+// 页面初始化：登录后自动加载右上角头像
+async function initUserAvatar() {
+  const { data: { user } } = await client.auth.getUser();
+  if(user){
+    const meta = user.user_metadata || {};
+    const defaultSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23888'/%3E%3C/svg%3E";
+    if(meta.avatar_url){
+      topAvatar.src = meta.avatar_url + "?t=" + Date.now();
+    }else{
+      topAvatar.src = defaultSvg;
+    }
+  }
+}
+initUserAvatar();
 </script>
 </body>
 </html>
