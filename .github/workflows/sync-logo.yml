@@ -1,0 +1,26 @@
+name: 自动同步GitHub图片到Supabase素材库
+# 仅当main分支images文件夹变动时触发
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'images/**'
+
+jobs:
+  sync_material:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      GITHUB_OWNER: DXE123-xzs
+      GITHUB_REPO: logo
+    steps:
+      - name: 拉取仓库代码
+        uses: actions/checkout@v4
+
+      - name: 安装Node依赖
+        run: npm install @supabase/supabase-js @octokit/rest
+
+      - name: 执行同步脚本
+        run: node sync-material.js
