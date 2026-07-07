@@ -11,6 +11,10 @@
 <title>企业标志素材库 | 登录</title>
 <!-- Supabase SDK 仅引入一次 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// 提前声明存储可用，减少控制台Tracking警告
+window.addEventListener('beforeunload', () => {});
+</script>
 <!-- CSP适配本地调试 -->
 <style>
 * {
@@ -24,7 +28,7 @@
 .login-page {
     width: 100vw;
     height: 100vh;
-    display: flex;
+    display: none;
     position: fixed;
     inset: 0;
     z-index: 999999;
@@ -1080,14 +1084,33 @@
 // Supabase 全局初始化（仅一次，不再重复定义）
 const SUPABASE_URL = "https://wrgdztsnhgjqhshalxhz.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_5-a2JCOT07BwSpe60KBx8A_Sbv78gVH";
-const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true, // 保留持久会话，刷新页面不登出
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce' // PKCE授权流，大幅减少第三方存储拦截报错
+  },
+  global: {
+    headers: {
+      'Cache-Control': 'no-cache'
+    }
+  }
+});
 let isManualLogin = false;
 let isRegistering = false; // 新增注册锁
 let currentSearchKey = "";
+let isResetPwd = false;
 
 // 监听登录状态变化
 client.auth.onAuthStateChange((event, session) => {
-    // 双重拦截：正在注册 或者 不是手动登录，一律强制停登录页
+    if(isResetPwd) return;
+    // 存在有效会话，直接锁定主页，绝不弹出登录遮罩
+    if(session && !isRegistering) {
+        isManualLogin = true;
+        enterMainPage();
+        return;
+    }
     if(isRegistering || !isManualLogin) {
         loginPage.style.display = 'flex';
         mainSite.classList.remove('unlock');
@@ -1326,12 +1349,24 @@ confirmDel.onclick = async () => {
     }
 }
 
-// 页面加载校验登录状态
-    window.onload = async () => {
+// 提前异步预查询登录会话，避免onload等待接口造成闪烁
+let cachedSession = null;
+(async function preFetchSession() {
+  const { data } = await client.auth.getSession();
+  cachedSession = data.session;
+})();
+
+// 页面加载完成后再执行最终判断
+window.onload = async () => {
     isRegistering = false;
-    const { data: { session } } = await client.auth.getSession();
-    if(session) enterMainPage();
-    else loginPage.style.display = 'flex';
+    // 直接使用预加载好的会话，不用再次等待接口
+    const session = cachedSession;
+    if(session) {
+        isManualLogin = true;
+        enterMainPage();
+    } else {
+        loginPage.style.display = 'flex';
+    }
 };
 
 // 滚动隐藏顶部面板
@@ -1608,6 +1643,7 @@ forgotPwdBtn.onclick = () => {
 // 关闭弹窗
 closeReset.onclick = () => {
     resetModal.classList.remove('show');
+    isResetPwd = false;
 };
 
 // 发送邮箱验证码
@@ -1651,6 +1687,7 @@ sendCodeBtn.onclick = async () => {
 
 // 提交重置密码
 submitReset.onclick = async () => {
+    isResetPwd = true;
     const email = document.getElementById('resetEmail').value.trim();
     const code = document.getElementById('resetCode').value.trim();
     const newPwd = document.getElementById('newPwd').value.trim();
@@ -1688,6 +1725,7 @@ submitReset.onclick = async () => {
     mainSite.classList.remove('unlock');
     // 切换到登录Tab
     loginTab.click();
+    isResetPwd = false;
 };
 // DOM元素
 const userAvatarEntrance = document.getElementById('userAvatarEntrance');
